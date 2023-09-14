@@ -16,6 +16,9 @@ lint:
 test:
 	go test ./...
 
+test-race:
+	go test -race ./...
+
 
 sample-server: version
 	CGO_ENABLED=0 GOOS=linux go build -ldflags="-extldflags=-static" -o ./zarf/docker/helpers/sample-service/service ./app/helpers/sample-service

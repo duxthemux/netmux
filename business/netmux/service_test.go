@@ -562,7 +562,6 @@ func TestRecvEvents(t *testing.T) {
 				EvtName: netmux.EventBridgeAdd,
 				Bridge:  netmux.Bridge{Name: fmt.Sprintf("B1%d", i)},
 			}
-			assert.NoError(t, err)
 		}
 	}()
 
