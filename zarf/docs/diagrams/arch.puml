@@ -1,0 +1,49 @@
+@startuml
+!theme aws-orange
+
+skinparam component{
+    fontColor #444444
+}
+
+component "Local Machine" {
+
+    component "NX Cli" as nxCli
+    component "NX Daemon" as nxDaemon {
+        component "NX Daemon Core" as nxDaemonCore
+        component "NX Endpoint Agent" as nxAgent
+        portin "Client Interface" as cliInterface
+        portout "Control Connection" as portControlConnectionDaemon
+        component "Network Allocator" as networkAllocator
+        component "DNS Allocator" as dnsAllocator
+        component "IP Allocator" as ipAllocator
+        component "Svc Proxy" as svcProxy
+        component "Svc Rev Proxy Listen" as svcRevProxyListen
+        component "Svc Rev Proxy Work" as svcRevProxyWork
+    }
+}
+
+component "Cluster"{
+    portin "Control Connection" as portControlConnectionService
+    component "NX Service" as nxService
+    component "Kubernetes" as kubernetes
+    component "Network Services in Cluster" as nwSvcInCluster
+}
+
+nxCli --> cliInterface: : 1 - HTTP
+nxDaemonCore --> nxAgent : 2
+cliInterface --> nxDaemonCore : 2
+nxAgent --> portControlConnectionDaemon : 3
+nxAgent --> networkAllocator : 4
+networkAllocator --> ipAllocator :5
+networkAllocator --> dnsAllocator : 6
+
+nxAgent --> svcProxy : 7a
+nxAgent --> svcRevProxyListen :7b
+svcRevProxyListen --> svcRevProxyWork :8b
+
+portControlConnectionDaemon<-->portControlConnectionService :1
+portControlConnectionService <--> nxService : 2
+nxService <-> kubernetes : 3
+nxService <--> nwSvcInCluster : 4
+
+@enduml

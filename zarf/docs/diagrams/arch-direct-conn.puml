@@ -1,0 +1,55 @@
+@startuml
+!theme aws-orange
+
+skinparam component{
+    fontColor #444444
+}
+
+component "User"  as user
+component "Local Machine" {
+
+    component "NX Cli" as nxCli
+
+    component "NX Daemon" as nxDaemon {
+        port "Control Connection" as portControlConnectionDaemon
+        component "NX Daemon" as nxDaemonCore
+        component "Endpoint Agent" as endpointAgent
+        component "Network Allocator" as networkAllocator
+        component "DNS Allocator" as dnsAllocator
+        component "IP Allocator" as ipAllocator
+        component "Svc Proxy" as svcProxy
+        component "Svc Rev Proxy Listen" as svcRevProxyListen
+        component "Svc Rev Proxy Work" as svcRevProxyWork
+    }
+
+    component "Workload Proxy" as workloadProxy
+}
+
+component "Cluster"{
+port "Control Connection" as portControlConnectionService
+component "NX Service" as nxService
+component "Proxied Workload Service" as proxiedWorkloadService
+component "Proxied Workload" as proxiedWorkload
+}
+
+user -> nxCli : "Command Line"
+nxCli -> nxDaemonCore
+nxDaemonCore ..> nxService
+nxService <..> proxiedWorkloadService
+nxDaemonCore -> networkAllocator
+networkAllocator -> dnsAllocator
+networkAllocator -> ipAllocator
+nxDaemonCore <..> endpointAgent
+endpointAgent ..> svcProxy
+endpointAgent ..> svcRevProxyListen
+svcRevProxyListen ..> svcRevProxyWork
+svcProxy .> workloadProxy
+
+nxDaemon .> workloadProxy: "Creates proxy"
+portControlConnectionDaemon<-->portControlConnectionService
+user <..> workloadProxy
+workloadProxy <..> proxiedWorkloadService : "Exchanges Data"
+proxiedWorkloadService <..> proxiedWorkload : "Exchanges Data"
+
+
+@enduml

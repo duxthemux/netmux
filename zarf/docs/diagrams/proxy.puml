@@ -1,0 +1,22 @@
+@startuml
+!theme aws-orange
+autonumber
+
+title Direct Proxy Flow
+
+participant client        as "Client"
+participant localAgent    as "Local Agent"
+participant remoteServer  as "Remote Server"
+participant proxiedServer as "Proxied Server"
+
+client -> localAgent: Establish local connection
+localAgent -> remoteServer: Dials new dedicated connection
+remoteServer -> proxiedServer: Dials new dedicated connection
+remoteServer <- proxiedServer: Connection established
+remoteServer <- remoteServer: Loops copying data back and forth
+localAgent <- remoteServer: Connection established
+localAgent <- localAgent: Loops copying data back and forth
+client <- localAgent: Connection established
+client <--> proxiedServer: Exchange Data
+
+@enduml

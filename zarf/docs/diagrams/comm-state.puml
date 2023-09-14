@@ -1,0 +1,33 @@
+@startuml
+!theme aws-orange
+
+
+
+[*] -> handleConn
+
+state handleConn {
+  [*] -> CmdControl
+  CmdControl -> handleCmdConn
+  --
+  [*] -> CmdProxy
+  CmdProxy -> handleProxyConn
+  --
+  [*] -> CmdRevProxyListen
+  CmdRevProxyListen -> handleRevProxyListen
+  --
+  [*] -> CmdRevProxyWork
+  CmdRevProxyWork -> handleRevProxyWork
+}
+
+state handleCmdConn {
+    [*] -> ReadFromWire
+    ReadFromWire -> PingCommand
+}
+
+state handleProxyConn{
+    [*] -> Serve
+}
+state handleRevProxyListen{
+    [*] -> Adds
+}
+@enduml
