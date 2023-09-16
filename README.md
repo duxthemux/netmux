@@ -10,3 +10,7 @@ Logo art by Ceci -  Cecilia Simão / Grande - Marcelo Grandioso (Gaudioso)
 This is netmux, a network multiplexer and meshing platform. 
 It was designed to make your life easier and more enjoyable while
 developing your container based services - although we plan to support bare-metal shortly.
+
+For installation instructions, please refer to the [instalation guide.](./zarf/docs/guides/install.md)
+
+For Kubernetes usage, please refer to the [using kubernetes guide.](./zarf/docs/guides/using-kubernetes.md)

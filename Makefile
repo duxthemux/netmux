@@ -1,8 +1,8 @@
-DT := $(shell date +%Y.%m.%d.%H%M%S)
+DT := $(shell date +%Y.%m.%d.%H.%M.%S)
 HASH := $(shell git rev-parse HEAD)
 USER := $(shell whoami)
 KUBECONFIG := ~/.kube/config
-
+name := netmux
 
 version:
 	echo $(DT) > ./foundation/buildinfo/build-date
@@ -26,16 +26,29 @@ sample-server: version
 #	KUBECONFIG=$(KUBECONFIG) kubectl --namespace netmux scale deployment sample --replicas=0
 #	KUBECONFIG=$(KUBECONFIG) kubectl --namespace netmux scale deployment sample --replicas=1
 
-netmux-server-arm64: version
-	CGO_ENABLED=0 GOOS=linux go build -ldflags="-extldflags=-static" -o ./zarf/docker/nx-server/service ./app/nx-server
-	docker build -t digitalcircle/netmux-arm64:$(HASH) -t digitalcircle/netmux-arm64:latest -f ./zarf/docker/nx-server/Dockerfile .
-#	KUBECONFIG=$(KUBECONFIG) kubectl --namespace netmux scale deployment netmux --replicas=0
-#	KUBECONFIG=$(KUBECONFIG) kubectl --namespace netmux scale deployment netmux --replicas=1
-	docker push digitalcircle/netmux-arm64:latest
 
-netmux-server-amd64: version
-	CGO_ENABLED=0 GOOS=linux go build -ldflags="-extldflags=-static" -o ./zarf/docker/nx-server/service ./app/nx-server
-	docker build -t digitalcircle/netmux-amd64:$(HASH) -t digitalcircle/netmux-amd64:latest -f ./zarf/docker/nx-server/Dockerfile .
-#	KUBECONFIG=$(KUBECONFIG) kubectl --namespace netmux scale deployment netmux --replicas=0
-#	KUBECONFIG=$(KUBECONFIG) kubectl --namespace netmux scale deployment netmux --replicas=1
-	docker push digitalcircle/netmux-amd64:latest
+docker-img-local-arm64: version
+
+	GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ./zarf/docker/netmux/bin/linux/arm64/$(name) ./app/nx-server
+
+	docker rmi -f duxthemux/$(name):latest
+	docker build -f ./zarf/docker/netmux/Dockerfile -t duxthemux/$(name):latest --platform=linux/arm64  .
+
+docker-img-local: version
+
+	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o ./zarf/docker/netmux/bin/linux/amd64/$(name) ./app/nx-server
+	GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ./zarf/docker/netmux/bin/linux/arm64/$(name) ./app/nx-server
+
+	docker rmi -f duxthemux/$(name):latest
+	docker buildx build -f ./zarf/docker/netmux/Dockerfile -t duxthemux/$(name):latest --platform=linux/arm64,linux/amd64  . --load
+
+docker-img: version
+
+	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o ./zarf/docker/netmux/bin/linux/amd64/$(name) ./app/nx-server
+	GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ./zarf/docker/netmux/bin/linux/arm64/$(name) ./app/nx-server
+
+	upx --best --lzma ./zarf/docker/netmux/bin/linux/amd64/$(name)
+	upx --best --lzma ./zarf/docker/netmux/bin/linux/arm64/$(name)
+
+	docker rmi -f duxthemux/$(name):latest
+	docker buildx build -f ./zarf/docker/netmux/Dockerfile -t duxthemux/$(name):latest --platform=linux/arm64,linux/amd64  . --push
