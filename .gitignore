@@ -26,3 +26,6 @@ go.work
 /stage/nx.cer
 /stage/nx.key
 /zarf/docker/nx-server/service
+
+dist/
+/zarf/docker/netmux/bin/

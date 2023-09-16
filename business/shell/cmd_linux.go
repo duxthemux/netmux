@@ -24,6 +24,14 @@ func sh(cmdline string) *exec.Cmd {
 	return cmd
 }
 
+func shStr(cmdline string) (string, error) {
+	cmd := sh(cmdline)
+
+	bs, err := cmd.CombinedOutput()
+
+	return string(bs), err
+}
+
 func Ping(h string) (string, error) {
 	return shStr(fmt.Sprintf("ping -c 4 %s", h))
 }

@@ -30,6 +30,14 @@ func sh(cmdline string) *exec.Cmd {
 	return cmd
 }
 
+func shStr(cmdline string) (string, error) {
+	cmd := sh(cmdline)
+
+	bs, err := cmd.CombinedOutput()
+
+	return string(bs), err
+}
+
 func shSu(cmdline string) error {
 	_, err := su.ShellExecute(su.RUNAS,
 		"cmd",
