@@ -20,12 +20,7 @@
 
 # Go workspace file
 go.work
-/stage/ca.cer
-/stage/ca.key
-/stage/netmux.yaml
-/stage/nx.cer
-/stage/nx.key
+/stage
 /zarf/docker/nx-server/service
-
-dist/
 /zarf/docker/netmux/bin/
+/zarf/dist

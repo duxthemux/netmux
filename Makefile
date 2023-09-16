@@ -50,3 +50,7 @@ docker-img: version
 
 	- docker rmi -f duxthemux/$(name):latest
 	docker buildx build -f ./zarf/docker/netmux/Dockerfile -t duxthemux/$(name):latest --platform=linux/arm64,linux/amd64  . --push
+
+my-bins:
+	go build -ldflags="-s -w" -o zarf/dist/nx ./app/nx-cli
+	go build -ldflags="-s -w" -o zarf/dist/nx-daemon ./app/nx-daemon

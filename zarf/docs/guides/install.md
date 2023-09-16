@@ -2,7 +2,7 @@
 
 There are multiple possibilities to apply netmux, this guide will explore each as they become available.
 
-1. Kubernetes
+1. Kubernetes - Please check [guide.](using-kubernetes.md)
 2. Docker (In progress)
 3. Bare Metal (In progress)
 
@@ -10,6 +10,17 @@ The following components will be required anyhow, and have specific installation
 
 1. Netmux Daemon
 2. Netmux Cli
+
+In order to build them you can call (once you clone the repo) the following command:
+
+```shell
+make my-bins
+```
+
+Your binaries will be created under `zarf/dist`
+
+Please add `nx` to a folder in your path and `nx-daemon` to a dedicated folder - this place will vary depending on your 
+os, so please see specific guides below.
 
 ## Installing the Daemon:
 
