@@ -122,22 +122,22 @@ func (c *Agent) ServeProxy(ctx context.Context, bridge Bridge) error {
 
 		if c.reportMetricFactory != nil {
 			obsB := c.reportMetricFactory.New("proxy", "name", "from", "to").
-				Observer(map[string]string{
+				Counter(map[string]string{
 					"name": bridge.Name,
 					"from": bridge.FullLocalAddr(),
 					"to":   bridge.FullContainerAddr(),
 				})
 
 			obsA := c.reportMetricFactory.New("proxy", "name", "from", "to").
-				Observer(map[string]string{
+				Counter(map[string]string{
 					"name": bridge.Name,
 					"from": bridge.FullContainerAddr(),
 					"to":   bridge.FullLocalAddr(),
 				})
 
-			piper.BMetric = obsB.ObserveFloat64
+			piper.BMetric = obsB.Add
 
-			piper.AMetric = obsA.ObserveFloat64
+			piper.AMetric = obsA.Add
 		}
 
 		go func() {
@@ -220,22 +220,22 @@ func (c *Agent) handleRevProxyWork(ctx context.Context, rpe RevProxyWorkRequest,
 
 	if c.reportMetricFactory != nil {
 		obsB := c.reportMetricFactory.New("rev-proxy", "name", "from", "to").
-			Observer(map[string]string{
+			Counter(map[string]string{
 				"naame": "",
 				"from":  rplreq.RemoteAddr,
 				"to":    rplreq.LocalAddr,
 			})
 
 		obsA := c.reportMetricFactory.New("rev-proxy", "name", "from", "to").
-			Observer(map[string]string{
+			Counter(map[string]string{
 				"naame": "",
 				"from":  rplreq.LocalAddr,
 				"to":    rplreq.RemoteAddr,
 			})
 
-		piper.BMetric = obsB.ObserveFloat64
+		piper.BMetric = obsB.Add
 
-		piper.AMetric = obsA.ObserveFloat64
+		piper.AMetric = obsA.Add
 	}
 
 	if err := piper.Run(ctx); err != nil {

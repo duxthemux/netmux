@@ -242,22 +242,22 @@ func (s *Service) handleProxyConn(ctx context.Context, conn net.Conn, req ProxyR
 
 	if s.reportMetricFactory != nil {
 		obsB := s.reportMetricFactory.New("proxy", "name", "from", "to").
-			Observer(map[string]string{
+			Counter(map[string]string{
 				"name": "",
 				"from": conn.LocalAddr().String(),
 				"to":   conn.RemoteAddr().String(),
 			})
 
 		obsA := s.reportMetricFactory.New("proxy", "name", "from", "to").
-			Observer(map[string]string{
+			Counter(map[string]string{
 				"name": "",
 				"from": conn.RemoteAddr().String(),
 				"to":   conn.LocalAddr().String(),
 			})
 
-		piper.BMetric = obsB.ObserveFloat64
+		piper.BMetric = obsB.Add
 
-		piper.AMetric = obsA.ObserveFloat64
+		piper.AMetric = obsA.Add
 	}
 
 	if err = piper.Run(ctx); err != nil {
@@ -345,22 +345,22 @@ func (s *Service) handleRevProxyWork(ctx context.Context, conn net.Conn, req Rev
 
 	if s.reportMetricFactory != nil {
 		obsB := s.reportMetricFactory.New("proxy", "name", "from", "to").
-			Observer(map[string]string{
+			Counter(map[string]string{
 				"name": "",
 				"from": conn.LocalAddr().String(),
 				"to":   conn.RemoteAddr().String(),
 			})
 
 		obsA := s.reportMetricFactory.New("proxy", "name", "from", "to").
-			Observer(map[string]string{
+			Counter(map[string]string{
 				"name": "",
 				"from": conn.RemoteAddr().String(),
 				"to":   conn.LocalAddr().String(),
 			})
 
-		piper.BMetric = obsB.ObserveFloat64
+		piper.BMetric = obsB.Add
 
-		piper.AMetric = obsA.ObserveFloat64
+		piper.AMetric = obsA.Add
 	}
 
 	if err := piper.Run(ctx); err != nil {

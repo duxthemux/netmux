@@ -10,7 +10,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	k8s2 "go.digitalcircle.com.br/dc/netmux/app/nx-server/runtime/k8s"
+	"go.digitalcircle.com.br/dc/netmux/app/nx-server/runtime/k8s"
 	"go.digitalcircle.com.br/dc/netmux/business/netmux"
 	"go.digitalcircle.com.br/dc/netmux/foundation/buildinfo"
 	"go.digitalcircle.com.br/dc/netmux/foundation/metrics"
@@ -76,7 +76,7 @@ func run() error {
 		return fmt.Errorf("error setting up service listener: %w", err)
 	}
 
-	k8sRuntime := k8s2.NewRuntime(k8s2.Opts{})
+	k8sRuntime := k8s.NewRuntime(k8s.Opts{})
 
 	defer func() {
 		if err := k8sRuntime.Close(); err != nil {
@@ -84,7 +84,7 @@ func run() error {
 		}
 	}()
 
-	probe := k8s2.NewProbe(":8083")
+	probe := k8s.NewProbe(":8083")
 
 	netmuxService.AddEventSource(ctx, k8sRuntime)
 

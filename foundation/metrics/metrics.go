@@ -16,14 +16,14 @@ import (
 
 // Observer implements the last mile collector to a metric. Ideally all preparation to report metrics should be chached
 // by this entity.
-type Observer interface {
-	ObserveFloat64(value float64)
+type Counter interface {
+	Add(value float64)
 }
 
 // Metric represents one data point to be collected. Since it may have flags/labels, we use it as an intermediary
 // entity. An observer should be created from the metric for further reporting.
 type Metric interface {
-	Observer(labels map[string]string) Observer
+	Counter(labels map[string]string) Counter
 }
 
 // Factory allows creation of metrics.
@@ -35,11 +35,11 @@ type Factory interface {
 
 // Stdout metrics family is a simple implementation of our metrics stack, sending them to stdout.
 
-type StdoutObserver struct {
+type StdoutCounter struct {
 	attrs []any
 }
 
-func (s *StdoutObserver) ObserveFloat64(value float64) {
+func (s *StdoutCounter) Add(value float64) {
 	s.attrs[3] = value
 	slog.Info("Metric", s.attrs...)
 }
@@ -48,7 +48,7 @@ type StdoutMetric struct {
 	name string
 }
 
-func (s *StdoutMetric) Observer(labels map[string]string) *StdoutObserver {
+func (s *StdoutMetric) Counter(labels map[string]string) Counter { //nolint:ireturn,nolintlint
 	attrs := make([]any, len(labels)+4) //nolint:gomnd
 	attrs[0] = "name"
 	attrs[1] = s.name
@@ -62,12 +62,12 @@ func (s *StdoutMetric) Observer(labels map[string]string) *StdoutObserver {
 		counter += 2
 	}
 
-	return &StdoutObserver{}
+	return &StdoutCounter{}
 }
 
 type StdoutFactory struct{}
 
-func (s *StdoutFactory) New(m string, _ ...string) *StdoutMetric {
+func (s *StdoutFactory) New(m string, _ ...string) Metric { //nolint:ireturn,nolintlint
 	return &StdoutMetric{
 		name: m,
 	}
@@ -81,21 +81,21 @@ func NewStdoutFactory() *StdoutFactory {
 
 // Prom family is the implementation of our stack to work on top of prometheus.
 
-type PromObserver struct {
-	promObserver prometheus.Observer
+type PromCounter struct {
+	counter prometheus.Counter
 }
 
-func (s *PromObserver) ObserveFloat64(value float64) {
-	s.promObserver.Observe(value)
+func (s *PromCounter) Add(value float64) {
+	s.counter.Add(value)
 }
 
 type PromMetric struct {
 	name       string
-	promMetric *prometheus.HistogramVec
+	promMetric *prometheus.CounterVec
 }
 
-func (p *PromMetric) Observer(labels map[string]string) Observer { //nolint:ireturn,nolintlint
-	ret := &PromObserver{promObserver: p.promMetric.With(labels)}
+func (p *PromMetric) Counter(labels map[string]string) Counter { //nolint:ireturn,nolintlint
+	ret := &PromCounter{counter: p.promMetric.With(labels)}
 
 	return ret
 }
@@ -135,7 +135,7 @@ func (p *PromFactory) New(metric string, labels ...string) Metric { //nolint:ire
 
 	ret = &PromMetric{
 		name: metric,
-		promMetric: promauto.NewHistogramVec(prometheus.HistogramOpts{
+		promMetric: promauto.NewCounterVec(prometheus.CounterOpts{
 			Namespace: "netmux",
 			Subsystem: "nexmut",
 			Name:      metric,
