@@ -19,11 +19,6 @@ test:
 test-race:
 	go test -race ./...
 
-
-sample-server: version
-	CGO_ENABLED=0 GOOS=linux go build -ldflags="-extldflags=-static" -o ./zarf/docker/helpers/sample-service/service ./app/helpers/sample-service
-	docker build -t digitalcircle/sample-service:$(HASH) -t digitalcircle/sample-service:latest -f ./zarf/docker/helpers/sample-service/Dockerfile .
-
 docker-img-local-amd64: version
 
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o ./zarf/docker/netmux/bin/linux/amd64/$(name) ./app/nx-server
