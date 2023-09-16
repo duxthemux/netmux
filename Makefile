@@ -20,7 +20,6 @@ test-race:
 	go test -race ./...
 
 docker-img-local-amd64: version
-
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o ./zarf/docker/netmux/bin/linux/amd64/$(name) ./app/nx-server
 
 	- docker rmi -f duxthemux/$(name):latest
@@ -28,7 +27,6 @@ docker-img-local-amd64: version
 
 
 docker-img-local-arm64: version
-
 	GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ./zarf/docker/netmux/bin/linux/arm64/$(name) ./app/nx-server
 
 	- docker rmi -f duxthemux/$(name):latest
@@ -36,7 +34,6 @@ docker-img-local-arm64: version
 
 
 docker-img: version
-
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o ./zarf/docker/netmux/bin/linux/amd64/$(name) ./app/nx-server
 	GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ./zarf/docker/netmux/bin/linux/arm64/$(name) ./app/nx-server
 
