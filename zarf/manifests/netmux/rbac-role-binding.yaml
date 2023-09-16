@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: netmux
+subjects:
+  - kind: ServiceAccount
+    name: netmux # name of your service account
+    namespace: netmux # this is the namespace your service account is in
+roleRef: # referring to your ClusterRole
+  kind: Role
+  name: netmux
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: netmux
+rules:
+  - apiGroups: [ "" ]
+    resources: [ "nodes", "services", "pods", "endpoints" ]
+    verbs: [ "get", "list", "watch" ]
+  - apiGroups: [ "extensions" ]
+    resources: [ "deployments" ]
+    verbs: [ "get", "list", "watch" ]

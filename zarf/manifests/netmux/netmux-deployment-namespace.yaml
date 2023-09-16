@@ -1,0 +1,48 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: netmux
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: netmux
+  template:
+    metadata:
+      labels:
+        app: netmux
+    spec:
+      serviceAccountName: netmux
+
+      containers:
+        - name: netmux
+          image: duxthemux/netmux:latest
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              port: 8083
+              path: /live
+          readinessProbe:
+            httpGet:
+              port: 8083
+              path: /ready
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          env:
+            - name: LOGLEVEL
+              value: debug
+            - name: LOGSRC
+              value: "false"
+          ports:
+            - containerPort: 50000
+              protocol: TCP
+              name: grpc
+            - containerPort: 8082
+              protocol: TCP
+              name: prometheus
+            - containerPort: 8083
+              protocol: TCP
+              name: k8sprobes
+
+      imagePullSecrets:
+        - name: reg
