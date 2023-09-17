@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rev-test-pod
+  labels:
+    app: pod
+spec:
+  containers:
+    - name: pod
+      image: alpine
+      command: [ "/bin/sh", "-c", "--" ]
+      args: [ "while true; do sleep 30; done;" ]
+      imagePullPolicy: IfNotPresent
+  restartPolicy: Always
+  

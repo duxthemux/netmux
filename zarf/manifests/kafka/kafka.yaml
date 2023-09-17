@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  annotations:
+    nx: |-
+      - name: kafka
+      - name: kafka-0
+        localAddr: kafka-0.kafka.netmux.svc.cluster.local
+        containerAddr: kafka-0.kafka.netmux.svc.cluster.local
+      - name: kafka-1
+        localAddr: kafka-1.kafka.netmux.svc.cluster.local
+        containerAddr: kafka-1.kafka.netmux.svc.cluster.local
+      - name: kafka-2
+        localAddr: kafka-2.kafka.netmux.svc.cluster.local
+        containerAddr: kafka-2.kafka.netmux.svc.cluster.local
+  labels:
+    app: kafka-app
+spec:
+  ports:
+    - name: '9092'
+      port: 9092
+      protocol: TCP
+      targetPort: 9092
+  selector:
+    app: kafka-app
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  labels:
+    app: kafka-app
+spec:
+  serviceName: kafka
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kafka-app
+  template:
+    metadata:
+      labels:
+        app: kafka-app
+    spec:
+      containers:
+        - name: kafka-container
+          image: doughgle/kafka-kraft
+          ports:
+            - containerPort: 9092
+            - containerPort: 9093
+          env:
+            - name: REPLICAS
+              value: '3'
+            - name: SERVICE
+              value: kafka
+            - name: NAMESPACE
+              value: netmux
+            - name: SHARE_DIR
+              value: /mnt/kafka
+            - name: CLUSTER_ID
+              value: oh-sxaDRTcyAr6pFRbXyzA
+            - name: DEFAULT_REPLICATION_FACTOR
+              value: '3'
+            - name: DEFAULT_MIN_INSYNC_REPLICAS
+              value: '2'
+          volumeMounts:
+            - name: data
+              mountPath: /mnt/kafka
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "1Gi"

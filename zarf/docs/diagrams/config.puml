@@ -1,0 +1,41 @@
+@startyaml
+!theme aws-orange
+
+endpoints:
+  - name: local
+    endpoint: netmux:50000
+    kubernetes:
+      config: /Users/psimao/.kube/config
+      namespace: netmux
+      endpoint: netmux
+      port: 50000
+      context: orbstack
+
+  - name: customer01-ns01
+    endpoint: netmux:50000
+    kubernetes:
+      config: /Users/psimao/.kube/config
+      namespace: ns01
+      endpoint: netmux
+      port: 50000
+      context: customer01
+
+  - name: customer01-ns02
+    endpoint: netmux:50000
+    kubernetes:
+      config: /Users/psimao/.kube/config
+      namespace: ns02
+      endpoint: netmux
+      port: 50000
+      context: customer01
+
+  - name: customer02
+    endpoint: netmux:50000
+    kubernetes:
+      config: /Users/psimao/.kube/dedicatedFile
+      namespace: nsSome
+      endpoint: netmux
+      port: 50000
+      context: customer02
+
+@endyaml

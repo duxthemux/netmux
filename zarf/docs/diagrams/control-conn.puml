@@ -1,0 +1,34 @@
+@startuml
+!theme aws-orange
+autonumber
+title Control Connection Flow
+
+participant localAgent    as "Local Agent"
+participant remoteServer  as "Remote Server"
+participant eventsSource  as "Events Source"
+
+
+localAgent -> remoteServer: Dials in, identify itself as control
+localAgent -> localAgent: Creates G, loops over controlConn response
+group "Events Source"
+ ...When event arives...
+ eventsSource -> remoteServer: Sends events
+ remoteServer -> remoteServer: Loops over all event listening conns,\npropagate event
+ remoteServer -> localAgent: Sends event as control message
+ localAgent -> localAgent: Checks msg is event
+ localAgent -> localAgent: Reacts to event
+end
+
+group "Sending Command"
+  localAgent -> remoteServer: Send command
+  localAgent -> localAgent: Await response (async G controls all incoming messages)\nNon command msgs will not be sent back.
+  alt Got response
+  localAgent -> localAgent: Forward response to caller
+  else Got error
+  localAgent -> localAgent: Raise Error
+  else Timeout
+  localAgent -> localAgent: Raise Timeout Error
+  end
+end
+
+@enduml

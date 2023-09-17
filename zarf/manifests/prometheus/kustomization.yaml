@@ -1,0 +1,6 @@
+resources:
+  - rbac.yaml
+  - pvc.yaml
+  - config.yaml
+  - deployment.yaml
+  - service.yaml

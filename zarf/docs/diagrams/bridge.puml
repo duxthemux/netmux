@@ -1,0 +1,13 @@
+@startyaml
+!theme aws-orange
+bridge:
+    name: any string
+    namespace: k8s filled
+    localAddr: string
+    localPort: string
+    containerAddr: string
+    containerPort: string
+    direction: L2C or C2L
+    family: tcp | udp
+
+@endyaml

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample
+  annotations:
+    nx: |-
+      - name: sample01
+spec:
+  ports:
+    - port: 8080
+      name: sample
+      protocol: TCP
+      targetPort: 8080
+
+  selector:
+    app: sample

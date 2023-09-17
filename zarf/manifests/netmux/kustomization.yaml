@@ -1,0 +1,8 @@
+namespace: netmux
+resources:
+  - namespace.yaml
+  - rbac-service-account.yaml
+  - rbac-role.yaml
+  - rbac-role-binding.yaml
+  - netmux-deployment-namespace.yaml
+  - netmux-service.yaml

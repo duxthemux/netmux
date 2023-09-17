@@ -1,0 +1,24 @@
+@startuml
+!theme aws-orange
+autonumber
+
+title Reverse Proxy Flow
+
+participant localProxiedService as "Local Proxied Service"
+participant localAgent    as "Local Agent"
+participant remoteServer  as "Remote Server"
+participant remoteClient        as "Remote Client"
+
+
+localAgent -> remoteServer: Dials new dedicated connection for Reversing Conns
+remoteServer -> remoteServer: Creates listener, awaits remote conns
+remoteClient -> remoteServer: Dials in
+remoteServer -> localAgent: Sends RevProxyWorkRequest
+localAgent -> remoteServer: Creates dedicate connection, to proxy remote connections
+localAgent <- remoteServer: Accepts conn, identify pending remote connection
+remoteServer <- remoteServer: Loops copying data back and forth
+localAgent -> localProxiedService: Creates dedicated connection
+localAgent -> localAgent: Loops copying data back and forth
+remoteClient <--> localProxiedService: Data Exchange
+
+@enduml

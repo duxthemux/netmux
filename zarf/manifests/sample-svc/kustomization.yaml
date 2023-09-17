@@ -1,0 +1,5 @@
+resources:
+  - rev-test-pod.yaml
+  - sample-deployment.yaml
+  - sample-revservice.yaml
+  - sample-service.yaml
