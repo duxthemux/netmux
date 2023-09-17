@@ -24,3 +24,5 @@ go.work
 /zarf/docker/nx-server/service
 /zarf/docker/netmux/bin/
 /zarf/dist
+/zarf/docker/helpers/sample-service/bin/linux/amd64/service
+/zarf/docker/helpers/sample-service/bin/linux/arm64/service

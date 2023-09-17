@@ -46,3 +46,18 @@ docker-img: version
 my-bins:
 	go build -ldflags="-s -w" -o zarf/dist/nx ./app/nx-cli
 	go build -ldflags="-s -w" -o zarf/dist/nx-daemon ./app/nx-daemon
+
+# -------------
+docker-init-buildx:
+	docker buildx create --use
+
+sample-server:
+	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o ./zarf/docker/helpers/sample-service/bin/linux/amd64/service ./zarf/sample-apps/sample-service
+	GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ./zarf/docker/helpers/sample-service/bin/linux/arm64/service ./zarf/sample-apps/sample-service
+
+	upx --best --lzma ./zarf/docker/helpers/sample-service/bin/linux/amd64/service
+	upx --best --lzma ./zarf/docker/helpers/sample-service/bin/linux/arm64/service
+
+
+	- docker rmi -f duxthemux/sample-service:latest
+	docker buildx build -f ./zarf/docker/helpers/sample-service/Dockerfile -t duxthemux/sample-service:latest --platform=linux/arm64,linux/amd64  . --push

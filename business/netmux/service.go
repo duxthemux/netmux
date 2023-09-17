@@ -42,11 +42,16 @@ type EventSource interface {
 
 type CmdHandler func(ctx context.Context, req []byte) ([]byte, error)
 
+type revProxyConn struct {
+	net.Conn
+	Name string
+}
+
 // Service defines the core Netmux service. This is the software component running from inside infrastructure
 // that will accept and process requests from agents running on remote machines.
 type Service struct {
 	cmdConns            *memstore.Map[net.Conn]
-	revProxyConns       *memstore.Map[net.Conn]
+	revProxyConns       *memstore.Map[*revProxyConn]
 	bridges             *memstore.Map[Bridge]
 	wire                *wire.Wire
 	cmdHandler          map[uint16]CmdHandler
@@ -243,14 +248,14 @@ func (s *Service) handleProxyConn(ctx context.Context, conn net.Conn, req ProxyR
 	if s.reportMetricFactory != nil {
 		obsB := s.reportMetricFactory.New("proxy", "name", "from", "to").
 			Counter(map[string]string{
-				"name": "",
+				"name": req.Name,
 				"from": conn.LocalAddr().String(),
 				"to":   conn.RemoteAddr().String(),
 			})
 
 		obsA := s.reportMetricFactory.New("proxy", "name", "from", "to").
 			Counter(map[string]string{
-				"name": "",
+				"name": req.Name,
 				"from": conn.RemoteAddr().String(),
 				"to":   conn.LocalAddr().String(),
 			})
@@ -295,8 +300,11 @@ func (s *Service) handleRevProxyListen(ctx context.Context, srcConn net.Conn, re
 
 			return fmt.Errorf("error handleRevProxyListen: %w", err)
 		}
-
-		id := s.revProxyConns.Add(rconn)
+		rpConn := &revProxyConn{
+			Conn: rconn,
+			Name: req.Name,
+		}
+		id := s.revProxyConns.Add(rpConn)
 
 		slog.Debug("handleRevProxyListen: got new connection", "id", id, "rconn", rconn.RemoteAddr().String())
 
@@ -346,14 +354,14 @@ func (s *Service) handleRevProxyWork(ctx context.Context, conn net.Conn, req Rev
 	if s.reportMetricFactory != nil {
 		obsB := s.reportMetricFactory.New("proxy", "name", "from", "to").
 			Counter(map[string]string{
-				"name": "",
+				"name": proxy.Name,
 				"from": conn.LocalAddr().String(),
 				"to":   conn.RemoteAddr().String(),
 			})
 
 		obsA := s.reportMetricFactory.New("proxy", "name", "from", "to").
 			Counter(map[string]string{
-				"name": "",
+				"name": proxy.Name,
 				"from": conn.RemoteAddr().String(),
 				"to":   conn.LocalAddr().String(),
 			})
@@ -415,7 +423,7 @@ func WithMetrics(rmf metrics.Factory) Opts {
 func NewService(opts ...Opts) *Service {
 	ret := Service{
 		cmdConns:      memstore.New[net.Conn](),
-		revProxyConns: memstore.New[net.Conn](),
+		revProxyConns: memstore.New[*revProxyConn](),
 		cmdHandler:    map[uint16]CmdHandler{},
 		bridges:       memstore.New[Bridge](),
 		eventsLogger: func(e Event) {

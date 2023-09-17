@@ -168,6 +168,7 @@ type PingResponse struct {
 
 type ProxyRequest struct {
 	Message  `json:"message"`
+	Name     string `json:"name" yaml:"name"`
 	Family   string `json:"family,omitempty"`
 	Endpoint string `json:"endpoint,omitempty"`
 }
@@ -178,6 +179,7 @@ type ProxyResponse struct {
 
 type RevProxyListenRequest struct {
 	Message
+	Name       string `json:"name" yaml:"name"`
 	Family     string `json:"family,omitempty"`
 	RemoteAddr string `json:"endpoint,omitempty"`
 	LocalAddr  string `json:"localAddr,omitempty"`

@@ -111,6 +111,7 @@ func (c *Agent) ServeProxy(ctx context.Context, bridge Bridge) error {
 		}
 
 		lcon, err := c.Proxy(ProxyRequest{
+			Name:     bridge.Name,
 			Family:   bridge.Family,
 			Endpoint: bridge.FullContainerAddr(),
 		})
@@ -150,6 +151,7 @@ func (c *Agent) ServeProxy(ctx context.Context, bridge Bridge) error {
 
 func (c *Agent) ServeReverse(ctx context.Context, b Bridge) (func(err error), error) {
 	return c.RevProxyListen(ctx, RevProxyListenRequest{
+		Name:       b.Name,
 		Family:     b.Family,
 		RemoteAddr: b.FullContainerAddr(),
 		LocalAddr:  b.FullLocalAddr(),
@@ -221,16 +223,16 @@ func (c *Agent) handleRevProxyWork(ctx context.Context, rpe RevProxyWorkRequest,
 	if c.reportMetricFactory != nil {
 		obsB := c.reportMetricFactory.New("rev-proxy", "name", "from", "to").
 			Counter(map[string]string{
-				"naame": "",
-				"from":  rplreq.RemoteAddr,
-				"to":    rplreq.LocalAddr,
+				"name": rplreq.Name,
+				"from": rplreq.RemoteAddr,
+				"to":   rplreq.LocalAddr,
 			})
 
 		obsA := c.reportMetricFactory.New("rev-proxy", "name", "from", "to").
 			Counter(map[string]string{
-				"naame": "",
-				"from":  rplreq.LocalAddr,
-				"to":    rplreq.RemoteAddr,
+				"name": rplreq.Name,
+				"from": rplreq.LocalAddr,
+				"to":   rplreq.RemoteAddr,
 			})
 
 		piper.BMetric = obsB.Add

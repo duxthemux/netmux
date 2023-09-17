@@ -210,7 +210,7 @@ func checkPodOrService(ctx context.Context, req *portForwardAPodRequest) error {
 		return fmt.Errorf("unable to find service %s: %w", req.Pod.Name, err)
 	}
 
-	if len(endpointsList.Items) > 0 && len(endpointsList.Items[0].Subsets) > 0 {
+	if len(endpointsList.Items) > 0 && len(endpointsList.Items[0].Subsets) > 0 && len(endpointsList.Items[0].Subsets[0].Addresses) > 0 {
 		ipadddr := endpointsList.Items[0].Subsets[0].Addresses[0].IP
 
 		pods, err := clientset.CoreV1().Pods(req.Pod.Namespace).List(
@@ -224,9 +224,10 @@ func checkPodOrService(ctx context.Context, req *portForwardAPodRequest) error {
 		}
 
 		req.Pod.Name = pods.Items[0].Name
+		return nil
 	}
 
-	return nil
+	return fmt.Errorf("could not resolve ip for endpoint %s", req.Pod.Name)
 }
 
 // portForwardAPod wil effectively do the port forward but to a pod.

@@ -6,10 +6,12 @@
 package wire
 
 import (
+	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
+	"time"
 )
 
 const HeaderLen = 10
@@ -36,23 +38,33 @@ func (wi *Wire) Write(writer io.Writer, cmd uint16, payload []byte) error {
 }
 
 // Read extracts next payload from the wire.
-func (wi *Wire) Read(reader io.Reader) (uint16, []byte, error) {
+func (wi *Wire) Read(reader io.Reader) (cmd uint16, payload []byte, err error) {
 	header := make([]byte, HeaderLen)
 	if _, err := reader.Read(header); err != nil {
 		return 0, nil, fmt.Errorf("error reading header: %w", err)
 	}
 
-	cmd := binary.LittleEndian.Uint16(header)
+	cmd = binary.LittleEndian.Uint16(header)
 
 	plLen := binary.LittleEndian.Uint64(header[2:])
 
-	payload := make([]byte, plLen)
+	defer func() {
+		r := recover()
+		if r != nil {
+			// TODO: this is a short term solution to handle undesired connections.
+			//  the timeout reduces overload until we find a better solution.
+			time.Sleep(time.Second * 5)
+			err = fmt.Errorf("wrong wire protocol format (recover): %s. %v", base64.StdEncoding.EncodeToString(header), r)
+		}
+	}()
+
+	payload = make([]byte, plLen)
 
 	if _, err := reader.Read(payload); err != nil {
 		return 0, nil, fmt.Errorf("error reading payload: %w", err)
 	}
 
-	return cmd, payload, nil
+	return
 }
 
 // WriteJSON adds a little to Write, allowing prompt marshalling of datastructures to the wire in Json format.

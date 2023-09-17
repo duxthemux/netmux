@@ -6,12 +6,12 @@ metadata:
   annotations:
     prometheus.io/scrape: 'true'
     prometheus.io.scheme: "http"
-    prometheus.io/port: "8082"
+    prometheus.io/port: "8081"
     nx: |-
       - name: netmux-prom
         direction: L2C
-        remotePort: "8082"
-        localPort: "8082"
+        remotePort: "8081"
+        localPort: "8081"
         localAddr: netmux-prom
 spec:
   ports:
@@ -19,10 +19,10 @@ spec:
       name: netmux
       protocol: TCP
       targetPort: 50000
-    - port: 8082
+    - port: 8081
       name: prometheus
       protocol: TCP
-      targetPort: 8082
+      targetPort: 8081
     - port: 8083
       name: probes
       protocol: TCP

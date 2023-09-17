@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -128,6 +129,11 @@ func (p *PromFactory) Start(ctx context.Context, addr string) error {
 }
 
 func (p *PromFactory) New(metric string, labels ...string) Metric { //nolint:ireturn,nolintlint
+	metric = strings.ToLower(metric)
+	metric = strings.ReplaceAll(metric, "-", "_")
+	metric = strings.ReplaceAll(metric, ".", "_")
+	metric = strings.ReplaceAll(metric, " ", "_")
+
 	ret, ok := p.metrics[metric]
 	if ok {
 		return ret
@@ -137,7 +143,7 @@ func (p *PromFactory) New(metric string, labels ...string) Metric { //nolint:ire
 		name: metric,
 		promMetric: promauto.NewCounterVec(prometheus.CounterOpts{
 			Namespace: "netmux",
-			Subsystem: "nexmut",
+			Subsystem: "netmux",
 			Name:      metric,
 		},
 			labels,

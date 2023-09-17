@@ -108,7 +108,7 @@ func run() error {
 	})
 
 	group.Go(func() error {
-		if err = metricsFactory.Start(ctx, ":8081"); err != nil {
+		if err = metricsFactory.Start(ctx, ":50001"); err != nil {
 			return fmt.Errorf("error starting metrics factory: %w", err)
 		}
 

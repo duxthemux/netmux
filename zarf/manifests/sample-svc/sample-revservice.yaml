@@ -3,18 +3,19 @@ kind: Service
 metadata:
   name: sample-rev
   namespace: netmux
-  labels:
-    app: netmux
   annotations:
     nx: |-
-      - localport: "8081"
+      - localPort: "8082"
         name: sample-rev
         direction: C2L
         auto: false
         proto: tcp
-        localaddr: 127.0.0.1
+        localAddr: 127.0.0.1
 spec:
   ports:
-    - port: 8081
+    - port: 8082
+      name: sample-rev
+      protocol: TCP
+      targetPort: 8082
   selector:
     app: netmux

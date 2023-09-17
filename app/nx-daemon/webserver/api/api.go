@@ -161,6 +161,12 @@ func (a *API) pluginMisc(_ context.Context, router *mux.Router) {
 				http.Error(responseWriter, err.Error(), http.StatusInternalServerError)
 			}
 		})
+	router.Name("miscTest").
+		Methods(http.MethodGet).
+		Path("/test").
+		HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
+			_, _ = responseWriter.Write([]byte("Netmux is here - OK!"))
+		})
 }
 
 func (a *API) Plugin(ctx context.Context, rootRouter *mux.Router, ca *caroot.CA) error {

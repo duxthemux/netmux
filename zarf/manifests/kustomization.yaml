@@ -1,0 +1,9 @@
+namespace: netmux
+
+resources:
+  - netmux
+  - sample-svc
+  - postgres
+  - kafka
+  - prometheus
+  - grafana

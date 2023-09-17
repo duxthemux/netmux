@@ -6,14 +6,38 @@ metadata:
     name: prometheus-server-conf
 data:
   prometheus.yml: |-
+    global:
+      scrape_interval: 15s
+      external_labels:
+        monitor: 'netmux'
+    # Scraping Prometheus itself
     scrape_configs:
+      - job_name: 'prometheus'
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['localhost:9090']
       - job_name: 'kubernetes-service-endpoints'
-
-        scrape_interval: 1s
-        scrape_timeout: 1s
-
         kubernetes_sd_configs:
           - role: endpoints
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            action: replace
+            target_label: kubernetes_name
+
+
+#    scrape_configs:
+#      - job_name: 'kubernetes-service-endpoints'
+#
+#        scrape_interval: 15s
+#        scrape_timeout: 10s
+#
+#        kubernetes_sd_configs:
+#          - role: endpoints
 
 #        relabel_configs:
 #          - source_labels: [__meta_kubernetes_service_annotation_se7entyse7en_prometheus_scrape]

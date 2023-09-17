@@ -47,9 +47,11 @@ func (c *countWriter) Write(p []byte) (int, error) {
 	return ret, nil
 }
 
-// Total will return the total number of bytes written to this countWriter so far.
-func (c *countWriter) Total() int64 {
-	return c.counter
+// TotalWReset returns acc data and resets counter.
+func (c *countWriter) TotalWReset() int64 {
+	ret := c.counter
+	c.counter = 0
+	return ret
 }
 
 // NewCountWriter creates a new countWriter on top of a pre-existing writer.
@@ -96,11 +98,11 @@ func (p *Pipe) Run(ctx context.Context) error {
 				}
 
 				if p.AMetric != nil {
-					p.AMetric(float64(aCountWriter.Total()))
+					p.AMetric(float64(aCountWriter.TotalWReset()))
 				}
 
 				if p.BMetric != nil {
-					p.BMetric(float64(bCountWriter.Total()))
+					p.BMetric(float64(bCountWriter.TotalWReset()))
 				}
 
 				time.Sleep(time.Second)

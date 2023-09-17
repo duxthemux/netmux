@@ -17,7 +17,7 @@ spec:
       containers:
         - name: netmux
           image: duxthemux/netmux:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           livenessProbe:
             httpGet:
               port: 8083
@@ -44,5 +44,3 @@ spec:
               protocol: TCP
               name: k8sprobes
 
-      imagePullSecrets:
-        - name: reg

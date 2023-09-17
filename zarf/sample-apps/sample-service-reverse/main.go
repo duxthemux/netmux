@@ -40,7 +40,7 @@ func main() {
 	slog.Info("Sample Reverse Service")
 	slog.Info(buildinfo.StringOneLine(""))
 
-	err := http.ListenAndServe(":8081", nil) //nolint:gosec
+	err := http.ListenAndServe(":8082", nil) //nolint:gosec
 	if err != nil {
 		panic(err)
 	}

@@ -157,6 +157,10 @@ func (d *Daemon) Connect(ctx context.Context, endpointName string) error {
 			select {
 			case <-ctx.Done():
 				_ = operationalEndPoint.operationalBridges.ForEach(func(k string, v *OperationalBridge) error {
+					if v == nil || v.cancel == nil {
+						return nil
+					}
+
 					v.cancel(fmt.Errorf("connection closing: %w", ctx.Err()))
 
 					return nil
