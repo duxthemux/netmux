@@ -1,6 +1,7 @@
 DT := $(shell date +%Y.%m.%d.%H.%M.%S)
 HASH := $(shell git rev-parse HEAD)
 USER := $(shell whoami)
+SEMVER := $(shell cat .semver)
 KUBECONFIG := ~/.kube/config
 name := netmux
 
@@ -46,6 +47,28 @@ docker-img: version
 my-bins:
 	go build -ldflags="-s -w" -o zarf/dist/nx ./app/nx-cli
 	go build -ldflags="-s -w" -o zarf/dist/nx-daemon ./app/nx-daemon
+
+dist-bins:
+	GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o zarf/dist/darwin_arm64/nx ./app/nx-cli
+	GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o zarf/dist/darwin_arm64/nx-daemon ./app/nx-daemon
+
+	GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o zarf/dist/darwin_amd64/nx ./app/nx-cli
+	GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o zarf/dist/darwin_amd64/nx-daemon ./app/nx-daemon
+
+	GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o zarf/dist/linux_arm64/nx ./app/nx-cli
+	GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o zarf/dist/linux_arm64/nx-daemon ./app/nx-daemon
+
+	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o zarf/dist/linux_amd64/nx ./app/nx-cli
+	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o zarf/dist/linux_amd64/nx-daemon ./app/nx-daemon
+
+	GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o zarf/dist/windows_amd64/nx.exe ./app/nx-cli
+	GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o zarf/dist/windows_amd64/nx-daemon.exe ./app/nx-daemon
+
+	tar czvfp zarf/dist/netmuxcli-$(SEMVER)-darwin_arm64.tgz zarf/dist/darwin_arm64
+	tar czvfp zarf/dist/netmuxcli-$(SEMVER)-darwin_amd64.tgz zarf/dist/darwin_amd64
+	tar czvfp zarf/dist/netmuxcli-$(SEMVER)-linux_arm64.tgz zarf/dist/linux_arm64
+	tar czvfp zarf/dist/netmuxcli-$(SEMVER)-linux_amd64.tgz zarf/dist/linux_amd64
+	zip -r zarf/dist/netmuxcli-$(SEMVER)-windows_amd64.zip zarf/dist/windows_amd64
 
 # -------------
 docker-init-buildx:
