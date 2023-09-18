@@ -70,6 +70,8 @@ func run() error {
 		return fmt.Errorf("error creating network allocator: %w", err)
 	}
 
+	_ = networkAllocator.CleanUp("")
+
 	metricsFactory := metrics.NewPromFactory()
 
 	svc := daemon.New(agentConfig, networkAllocator, daemon.WithMetrics(metricsFactory))

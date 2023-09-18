@@ -64,12 +64,11 @@ dist-bins:
 	GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o zarf/dist/windows_amd64/nx.exe ./app/nx-cli
 	GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o zarf/dist/windows_amd64/nx-daemon.exe ./app/nx-daemon
 
-	tar czvfp zarf/dist/netmuxcli-$(SEMVER)-darwin_arm64.tgz zarf/dist/darwin_arm64
-	tar czvfp zarf/dist/netmuxcli-$(SEMVER)-darwin_amd64.tgz zarf/dist/darwin_amd64
-	tar czvfp zarf/dist/netmuxcli-$(SEMVER)-linux_arm64.tgz zarf/dist/linux_arm64
-	tar czvfp zarf/dist/netmuxcli-$(SEMVER)-linux_amd64.tgz zarf/dist/linux_amd64
-	zip -r zarf/dist/netmuxcli-$(SEMVER)-windows_amd64.zip zarf/dist/windows_amd64
-
+	tar czvfp zarf/dist/netmuxcli-$(SEMVER)-darwin_arm64.tgz -C zarf/dist/darwin_arm64 .
+	tar czvfp zarf/dist/netmuxcli-$(SEMVER)-darwin_amd64.tgz -C zarf/dist/darwin_amd64 .
+	tar czvfp zarf/dist/netmuxcli-$(SEMVER)-linux_arm64.tgz -C zarf/dist/linux_arm64 .
+	tar czvfp zarf/dist/netmuxcli-$(SEMVER)-linux_amd64.tgz -C zarf/dist/linux_amd64 .
+	cd zarf/dist/windows_amd64 && zip -r ../netmuxcli-$(SEMVER)-windows_amd64.zip . && cd -
 # -------------
 docker-init-buildx:
 	docker buildx create --use
