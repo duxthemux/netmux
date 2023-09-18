@@ -22,6 +22,8 @@ Your binaries will be created under `zarf/dist`
 Please add `nx` to a folder in your path and `nx-daemon` to a dedicated folder - this place will vary depending on your 
 os, so please see specific guides below.
 
+Alternatively, you can grab the latest bins from the releases in the project.
+
 ## Installing the Daemon:
 
 ### Macos
@@ -79,11 +81,97 @@ os, so please see specific guides below.
 
 ### Linux
 
-To be added
+Once you got the binaries, we propose you create a folder called `/srv/nx-daemon`, and put both nx-daemon and nx
+there.
+
+Add this folder to your path, add the following line to your `.bashrc`:
+
+```
+export PATH=/srv/nx-daemon:$PATH
+```
+
+At the end of the file. Then call `source ~/.bashrc` and your path should be updated.
+
+Create a nx-daemon config file as explained above.
+
+The following steps should be executed as ROOT:
+
+Create a systemd file called /etc/systemd/system/nx-daemon.service - please replace <USER> with your username
+
+```
+[Unit]
+Description=NX Daemon
+
+[Service]
+Type=simple
+User=root
+Restart=always
+WorkingDirectory=/srv/nx-daemon
+ExecStart=/srv/nx-daemon/nx-daemon
+
+[Install]
+WantedBy=multi-user.target
+```
+
+After this, reload the services with `systemctl daemon-reload`.
+
+Finally, make it start w your system with `systemctl enable nx-daemon.service`.
+
+Check if your daemon has started correctly with `systemctl status nx-daemon`. 
+
+Start the daemon - it will generate the certificates for communicating w it in the folder.
+
+Copy the file `ca.cer` from `/srv/nx-daemon` to `/etc/pki/ca-trust/source/anchors`
+
+Update the trusted store with the command `update-ca-trust`
+
+now you can start playing w nx command.
 
 ### Windows
 
-To be added
+Download the binaries
+
+Save them in a new folder `c:\Program Files\nx-daemon`
+
+Downloand and install nssm from https://nssm.cc
+
+Save nssm.exe in the same folder
+
+From there open command prompt and run `nssm install`
+
+![NSSM](./nssm.png "nssm")
+
+Fill in data as shown, press install.
+
+Create the `netmux.yaml` file in there
+
+Create a virtual network adapter:
+
+1. right click start button -> Device manager
+2. select your PC at the top (otherwise menu item will be missing)
+3. menu "Action" -> "Add legacy hardware"
+4. next -> "install the hardware that I manually selectron from a list (Advanced)" -> next
+5. select "network adapters" -> next -> wait until list is loaded
+6. In the Manufacturer list, select Microsoft. In the Model list, select Microsoft KM-TEST Loopback Adapter
+next -> finish
+7. can be found where the other network adapters are. It is usually called "Ethernet 2" or something like that.
+
+Once created go to network connections, find it there and rename it to `LB`
+
+![nwconns](./nw-conns.png "NW Conns")
+
+Once done, start it with cmd line `sc start nx-daemon`
+
+Once the certificates have been generated, please ensure to add ca.cer to the list of trusted certificates, by clicking
+on it. 
+![add-trusted](./add-trusted.png "Add trusted certificate")
+
+The key here is to ensure the cert is added to the `Trusted Root Certification Authorities`
+
+>> If you face issues restarting the service in windows, issue the following command as Admin: 
+> `netsh interface ip delete address LB 10.0.0.1 255.255.255.0`
+> This is a known bug that will be addressed shortly as we standardize all operations on top of a TUN.
+
 
 ## Running the Daemon
 

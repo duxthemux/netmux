@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"os/user"
 	"strings"
+	"time"
 
 	su "github.com/nyaosorg/go-windows-su"
 )
@@ -14,7 +15,12 @@ type winShell struct{}
 
 func (w *winShell) IfconfigAddAlias(iface string, ipaddr string, netmask string, gw string) error {
 	err := shStdio(fmt.Sprintf("netsh interface ip add address %s %s %s", iface, ipaddr, netmask))
-	return err
+	if err != nil {
+		return err
+	}
+	time.Sleep(time.Second * 5)
+	return nil
+
 }
 
 func (w *winShell) IfconfigRemAlias(iface string, ipaddr string) error {
