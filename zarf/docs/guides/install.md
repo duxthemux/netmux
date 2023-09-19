@@ -24,26 +24,28 @@ os, so please see specific guides below.
 
 Alternatively, you can grab the latest bins from the releases in the project.
 
-## Installing the Daemon:
+## Macos
 
-### Macos
+### Installing the Daemon:
+
+
 
 1. Place the binary in a proper folder - we suggest /usr/local/nx-daemon
 2. Copy the plist file to /Library/LaunchDaemons
 3. Run `sudo launchctl load -w /Library/LaunchDaemons/nx-daemon.plist`
 
-# Uninstall
+### Uninstall
 
 1. Run `sudo launchctl unload -w /Library/LaunchDaemons/nx-daemon.plist`
 2. Remove the binary and the plist file
 
-# Manual start
+### Manual start
 `sudo launchctl start -w /Library/LaunchDaemons/nx-daemon.plist`
 
-# Manual stop
+### Manual stop
 `sudo launchctl stop -w /Library/LaunchDaemons/nx-daemon.plist`
 
-### nx-daemon.plist
+#### nx-daemon.plist
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -79,7 +81,7 @@ Alternatively, you can grab the latest bins from the releases in the project.
 </plist>
 ```
 
-### Linux
+## Linux
 
 Once you got the binaries, we propose you create a folder called `/srv/nx-daemon`, and put both nx-daemon and nx
 there.
@@ -119,15 +121,25 @@ Finally, make it start w your system with `systemctl enable nx-daemon.service`.
 
 Check if your daemon has started correctly with `systemctl status nx-daemon`. 
 
-Start the daemon - it will generate the certificates for communicating w it in the folder.
+Start the daemon - it will generate the certificates to allow communication between cli and the daemon.
 
-Copy the file `ca.cer` from `/srv/nx-daemon` to `/etc/pki/ca-trust/source/anchors`
+Files will be saved in the `/srv/nx-daemon`
+
+### For Specific Linux distros
+
+#### Fedora
+Copy the file `ca.cer` from `/srv/nx-daemon` to `/etc/pki/ca-trust/source/anchors/netmux.crt`
+
+#### Ubuntu
+Copy the file `ca.cer` from `/srv/nx-daemon` to `/usr/local/share/ca-certificates/netmux.crt`
+
+#### ALL
 
 Update the trusted store with the command `update-ca-trust`
 
 now you can start playing w nx command.
 
-### Windows
+## Windows
 
 Download the binaries
 
@@ -162,15 +174,11 @@ Once created go to network connections, find it there and rename it to `LB`
 
 Once done, start it with cmd line `sc start nx-daemon`
 
-Once the certificates have been generated, please ensure to add ca.cer to the list of trusted certificates, by clicking
+With certificates generated, please ensure to add ca.cer to the list of trusted certificates, by double clicking
 on it. 
 ![add-trusted](./add-trusted.png "Add trusted certificate")
 
-The key here is to ensure the cert is added to the `Trusted Root Certification Authorities`
-
->> If you face issues restarting the service in windows, issue the following command as Admin: 
-> `netsh interface ip delete address LB 10.0.0.1 255.255.255.0`
-> This is a known bug that will be addressed shortly as we standardize all operations on top of a TUN.
+The key detail here is to ensure the cert is added to the `Trusted Root Certification Authorities`
 
 
 ## Running the Daemon

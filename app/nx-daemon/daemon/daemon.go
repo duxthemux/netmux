@@ -124,7 +124,7 @@ func (d *Daemon) Connect(ctx context.Context, endpointName string) error {
 		if err := portForwarder.Start(ctx, epCfg.Kubernetes); err != nil {
 			cancel(fmt.Errorf("error starting portforwad: %w", err))
 
-			return fmt.Errorf("error connecting por forward: %w", err)
+			return fmt.Errorf("error connecting port forward: %w", err)
 		}
 
 		agentEndPointPortForward := net.JoinHostPort("localhost", strconv.Itoa(portForwarder.Port))
