@@ -16,6 +16,8 @@ For installation instructions, please refer to the [installation guide.](./zarf/
 
 For Kubernetes usage, please refer to the [using kubernetes guide.](./zarf/docs/guides/using-kubernetes.md)
 
+[Introductory documentation: Presented at Gophercon Brazil 2023 (PT-BR only at the moment)](./zarf/docs/gophercon-br-2023-presentation/Apresentação%20GopherCon%20BR%20_%202023%20-%20Netmux.pdf)
+
 ## Sponsors
 
 Digital Circle - https://www.digitalcircle.com.br
