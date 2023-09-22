@@ -15,3 +15,7 @@ We plan to support bare-metal shortly - and other use cases will come.
 For installation instructions, please refer to the [installation guide.](./zarf/docs/guides/install.md)
 
 For Kubernetes usage, please refer to the [using kubernetes guide.](./zarf/docs/guides/using-kubernetes.md)
+
+## Sponsors
+
+Digital Circle - https://www.digitalcircle.com.br
