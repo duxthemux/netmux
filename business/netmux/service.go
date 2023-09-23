@@ -97,13 +97,13 @@ func (s *Service) Serve(ctx context.Context, listener net.Listener) error {
 
 		slog.Debug("netmux: got new conn", "r-addr", conn.RemoteAddr().String())
 
-		go func() {
+		go func(conn net.Conn) {
 			if err = s.handleConn(ctx, conn); err != nil {
 				slog.Warn("error handling conn", "err", err, "raddr", conn.RemoteAddr().String())
 			}
 
 			helperIoClose(conn)
-		}()
+		}(conn)
 	}
 }
 
@@ -294,34 +294,32 @@ func (s *Service) handleRevProxyListen(ctx context.Context, srcConn net.Conn, re
 	}
 
 	for {
-		rconn, err := listener.Accept()
+		remoteConnection, err := listener.Accept()
 		if err != nil {
-			slog.Warn("error receiving conn", "peer", rconn.RemoteAddr(), "err", err)
+			slog.Warn("error receiving conn", "peer", remoteConnection.RemoteAddr().String(), "err", err)
 
 			return fmt.Errorf("error handleRevProxyListen: %w", err)
 		}
-		rpConn := &revProxyConn{
-			Conn: rconn,
-			Name: req.Name,
-		}
-		id := s.revProxyConns.Add(rpConn)
 
-		slog.Debug("handleRevProxyListen: got new connection", "id", id, "rconn", rconn.RemoteAddr().String())
+		slog.Debug("handleRevProxyListen: new Conn", "remoteConnection", remoteConnection.RemoteAddr().String(), "lconn", remoteConnection.LocalAddr().String())
 
-		revConnEvent := RevProxyEvent{
-			ID: id,
-		}
+		go func(conn net.Conn) {
+			rpConn := &revProxyConn{
+				Conn: conn,
+				Name: req.Name,
+			}
+			id := s.revProxyConns.Add(rpConn)
 
-		bytes, err := json.Marshal(revConnEvent)
-		if err != nil {
-			slog.Warn("error marshalling rev proxy event", "err", err)
+			slog.Debug("handleRevProxyListen: got new connection", "id", id, "remoteConnection", conn.RemoteAddr().String())
 
-			continue
-		}
+			revConnEvent := RevProxyEvent{
+				ID: id,
+			}
 
-		if err = s.wire.Write(srcConn, CmdRevProxyWork, bytes); err != nil {
-			return fmt.Errorf("error forwarding event: %w", err)
-		}
+			if err = s.wire.WriteJSON(srcConn, CmdRevProxyWork, revConnEvent); err != nil {
+				slog.Warn("error forwarding event:", "err", err)
+			}
+		}(remoteConnection)
 	}
 }
 
@@ -329,6 +327,8 @@ func (s *Service) handleRevProxyWork(ctx context.Context, conn net.Conn, req Rev
 	if ctx.Err() != nil {
 		return fmt.Errorf("context cancelled when handling rev proxy work: %w", ctx.Err())
 	}
+
+	slog.Debug("handleRevProxyWork", "rcon", conn.RemoteAddr().String(), "lconn", conn.LocalAddr().String(), "msg", fmt.Sprintf("%#v", req))
 
 	ctx, cancel := context.WithCancelCause(ctx)
 

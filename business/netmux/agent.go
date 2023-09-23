@@ -248,6 +248,7 @@ func (c *Agent) handleRevProxyWork(ctx context.Context, rpe RevProxyWorkRequest,
 func (c *Agent) handleRevProxyListen(ctx context.Context, conn net.Conn, req RevProxyListenRequest) {
 	for {
 		rpe := RevProxyWorkRequest{}
+
 		if err := c.wire.ReadJSON(conn, CmdRevProxyWork, &rpe); err != nil {
 			slog.Warn("error receiving payload", "err", err)
 
@@ -256,7 +257,7 @@ func (c *Agent) handleRevProxyListen(ctx context.Context, conn net.Conn, req Rev
 
 		slog.Debug("client.handleRevProxyListen: got new conn", "addr", conn.RemoteAddr().String())
 
-		c.handleRevProxyWork(ctx, rpe, req)
+		go c.handleRevProxyWork(ctx, rpe, req)
 	}
 }
 
