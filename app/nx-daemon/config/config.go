@@ -12,6 +12,7 @@ import (
 // Config represents the agent central userconfig file.
 type Config struct {
 	Address   string    `json:"address"   yaml:"address,omitempty"`
+	Network   string    `json:"network"   yaml:"network"`
 	User      string    `json:"-"         yaml:"user,omitempty"`
 	Cert      string    `json:"cert"      yaml:"cert,omitempty"`
 	Key       string    `json:"key"       yaml:"key,omitempty"`
@@ -92,6 +93,10 @@ func Load() (*Config, error) {
 
 	if cfg.Address == "" {
 		cfg.Address = "localhost:50000"
+	}
+
+	if cfg.Network == "" {
+		cfg.Network = "10.10.10.0/24"
 	}
 
 	return cfg, nil

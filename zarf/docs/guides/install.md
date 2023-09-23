@@ -190,6 +190,9 @@ This file describes the endpoints you may access.
 At the moment, every change in this file will require netmux to be restarted.
 
 ```yaml
+#the default used ip addresses will be in the range 10.10.10.0/24, but can be customized here.
+network: 10.1.0.0/24
+
 endpoints:
   - name: local
     endpoint: netmux:50000
