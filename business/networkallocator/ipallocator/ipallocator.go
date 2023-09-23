@@ -86,15 +86,19 @@ func (i *IPAllocator) CleanUp() {
 	}
 }
 
-func New(iface string) *IPAllocator {
+func New(iface string, cidr string) (*IPAllocator, error) {
 	ret := &IPAllocator{
 		shell:     shell2.New(),
 		iface:     iface,
 		freeAddrs: []string{},
 	}
-	for i := 1; i < 255; i++ {
-		ret.freeAddrs = append(ret.freeAddrs, fmt.Sprintf("10.0.0.%d", i))
+
+	freeAddrs, err := GetIPV4Addrs(cidr, true, true)
+	if err != nil {
+		return nil, fmt.Errorf("error allocating network addresses: %w", err)
 	}
 
-	return ret
+	ret.freeAddrs = freeAddrs
+
+	return ret, nil
 }

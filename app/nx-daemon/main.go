@@ -65,7 +65,7 @@ func run() error {
 		slog.Warn(fmt.Sprintf("error loading userconfig: %s", err.Error()))
 	}
 
-	networkAllocator, err := networkallocator.New(agentConfig.IFace)
+	networkAllocator, err := networkallocator.New(agentConfig.IFace, agentConfig.Network)
 	if err != nil {
 		return fmt.Errorf("error creating network allocator: %w", err)
 	}

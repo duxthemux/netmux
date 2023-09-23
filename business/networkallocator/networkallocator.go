@@ -74,13 +74,18 @@ func (n *NetworkAllocator) DNSEntries() []dnsallocator.DNSEntry {
 	return n.dnsAllocator.Entries()
 }
 
-func New(iface string) (*NetworkAllocator, error) {
-	ret := &NetworkAllocator{
-		ipAllocator:  ipallocator.New(iface),
-		dnsAllocator: dnsallocator.New(),
+func New(iface string, cidr string) (*NetworkAllocator, error) {
+	slog.Debug("Creating NWAllocator", "iface", iface, "cidr", cidr)
+	myIpallocator, err := ipallocator.New(iface, cidr)
+	if err != nil {
+		return nil, err
 	}
 
-	err := ret.dnsAllocator.Load()
+	ret := &NetworkAllocator{
+		ipAllocator: myIpallocator, dnsAllocator: dnsallocator.New(),
+	}
+
+	err = ret.dnsAllocator.Load()
 	if err != nil {
 		return nil, fmt.Errorf("error loading dns entries: %w", err)
 	}
