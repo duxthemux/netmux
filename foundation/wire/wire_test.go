@@ -26,12 +26,12 @@ func TestWireProto(t *testing.T) {
 	}{
 		{
 			name:  "Simple",
-			args:  args{cmd: 0, pl: []byte("ASD")},
+			args:  args{cmd: 1, pl: []byte("ASD")},
 			wantW: []byte("ASD"),
 		},
 		{
 			name:  "With Nils",
-			args:  args{cmd: 0, pl: []byte("ASD\x00123")},
+			args:  args{cmd: 1, pl: []byte("ASD\x00123")},
 			wantW: []byte("ASD\x00123"),
 		},
 	}
@@ -45,7 +45,7 @@ func TestWireProto(t *testing.T) {
 			cmd, pl, err := aWire.Read(w)
 			assert.NoError(t, err)
 
-			assert.Equal(t, cmd, uint16(0))
+			assert.Equal(t, cmd, uint16(1))
 			assert.Equal(t, aTest.wantW, pl)
 		})
 	}
