@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net"
 	"os"
-	"strings"
+	"strconv"
 
 	"golang.org/x/sync/errgroup"
 
@@ -26,18 +26,12 @@ func logInit() {
 
 	slogLevel := slog.LevelInfo
 
-	switch logLevel {
-	case "debug":
+	err := slogLevel.UnmarshalText([]byte(logLevel))
+	if err != nil {
 		slogLevel = slog.LevelDebug
-	case "info":
-		slogLevel = slog.LevelInfo
-	case "warn":
-		slogLevel = slog.LevelWarn
-	case "error":
-		slogLevel = slog.LevelError
 	}
 
-	slogAddSource := strings.ToLower(os.Getenv(EnvLogSrc)) == "true"
+	slogAddSource, _ := strconv.ParseBool(os.Getenv(EnvLogSrc))
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource:   slogAddSource,
