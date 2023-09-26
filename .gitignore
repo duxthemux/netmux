@@ -20,6 +20,7 @@
 
 # Go workspace file
 go.work
+/app/test
 /stage
 /zarf/docker/nx-server/service
 /zarf/docker/netmux/bin/

@@ -12,6 +12,8 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/urfave/cli/v2"
+
+	"go.digitalcircle.com.br/dc/netmux/app/nx-cli/installer"
 )
 
 type ListOutput struct {
@@ -167,6 +169,21 @@ func main() {
 		Name:  "nx",
 		Usage: "netmux command line client",
 		Commands: []*cli.Command{
+			{
+				Name:  "install",
+				Usage: "Install nx-daemon in your machine (call w root/admin) - Only for MAC ATM",
+				Action: func(_ *cli.Context) error {
+					myInstaller := installer.New()
+					return myInstaller.Install()
+				},
+			}, {
+				Name:  "uninstall",
+				Usage: "Uninstall nx-daemon in your machine (call w root/admin)  - Only for MAC ATM",
+				Action: func(_ *cli.Context) error {
+					myInstaller := installer.New()
+					return myInstaller.Uninstall()
+				},
+			},
 			{
 				Name:    "list",
 				Aliases: []string{"ls", "l"},

@@ -28,8 +28,6 @@ Alternatively, you can grab the latest bins from the releases in the project.
 
 ### Installing the Daemon:
 
-
-
 1. Place the binary in a proper folder - we suggest /usr/local/nx-daemon
 2. Copy the plist file to /Library/LaunchDaemons
 3. Run `sudo launchctl load -w /Library/LaunchDaemons/nx-daemon.plist`
