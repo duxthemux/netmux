@@ -20,7 +20,6 @@ func (w *winShell) IfconfigAddAlias(iface string, ipaddr string, netmask string,
 	}
 	time.Sleep(time.Second * 5)
 	return nil
-
 }
 
 func (w *winShell) IfconfigRemAlias(iface string, ipaddr string) error {

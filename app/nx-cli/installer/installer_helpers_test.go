@@ -52,5 +52,4 @@ func TestGetLinuxId(t *testing.T) {
 	require.Equal(t, "alpine", id)
 	id = installer.GetLinuxId(brokenUbuntuOsRelease)
 	require.Equal(t, "", id)
-
 }

@@ -90,7 +90,7 @@ func install() error {
 		return fmt.Errorf("dir %s already exists - cant continue", dirName)
 	}
 
-	err = os.Mkdir(dirName, 0600)
+	err = os.Mkdir(dirName, 0o600)
 	if err != nil {
 		return fmt.Errorf("could not create folder %s: %w", dirName, err)
 	}
@@ -98,14 +98,14 @@ func install() error {
 	configContent := strings.ReplaceAll(sampleConfig, "$USER", userName)
 	configContent = strings.ReplaceAll(configContent, "$USERHOME", myUser.HomeDir)
 
-	err = os.WriteFile(filepath.Join(dirName, "netmux.yaml"), []byte(configContent), 0600)
+	err = os.WriteFile(filepath.Join(dirName, "netmux.yaml"), []byte(configContent), 0o600)
 	if err != nil {
 		return fmt.Errorf("error creating netmux config file")
 	}
 
 	plistContent := strings.ReplaceAll(samplePlistContents, "$USERHOME", myUser.HomeDir)
 
-	err = os.WriteFile("/Library/LaunchDaemons/nx-daemon.plist", []byte(plistContent), 0600)
+	err = os.WriteFile("/Library/LaunchDaemons/nx-daemon.plist", []byte(plistContent), 0o600)
 	if err != nil {
 		return fmt.Errorf("could not write plist file: %w", err)
 	}

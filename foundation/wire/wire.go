@@ -42,7 +42,6 @@ func (wi *Wire) Write(writer io.Writer, cmd uint16, payload []byte) error {
 
 // Read extracts next payload from the wire.
 func (wi *Wire) Read(reader io.Reader) (cmd uint16, payload []byte, err error) {
-
 	header := make([]byte, HeaderLen)
 
 	readBytes, err := reader.Read(header)

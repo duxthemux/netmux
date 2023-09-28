@@ -176,7 +176,8 @@ func main() {
 					myInstaller := installer.New()
 					return myInstaller.Install()
 				},
-			}, {
+			},
+			{
 				Name:  "uninstall",
 				Usage: "Uninstall nx-daemon in your machine (call w root/admin)  - Only for MAC ATM",
 				Action: func(_ *cli.Context) error {

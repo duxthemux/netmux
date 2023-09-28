@@ -88,12 +88,12 @@ func install() error {
 		return fmt.Errorf("dir %s already exists - cant continue", dirName)
 	}
 
-	err = os.Mkdir(dirName, 0600)
+	err = os.Mkdir(dirName, 0o600)
 	if err != nil {
 		return fmt.Errorf("could not create folder %s: %w", dirName, err)
 	}
 
-	err = os.WriteFile("/etc/systemd/system/nx-daemon.service", []byte(sampleSystemDUnit), 0600)
+	err = os.WriteFile("/etc/systemd/system/nx-daemon.service", []byte(sampleSystemDUnit), 0o600)
 	if err != nil {
 		return fmt.Errorf("error generating service unit: %w", err)
 	}
@@ -101,7 +101,7 @@ func install() error {
 	configContent := strings.ReplaceAll(sampleConfig, "$USER", userName)
 	configContent = strings.ReplaceAll(configContent, "$USERHOME", myUser.HomeDir)
 
-	err = os.WriteFile(filepath.Join(dirName, "netmux.yaml"), []byte(configContent), 0600)
+	err = os.WriteFile(filepath.Join(dirName, "netmux.yaml"), []byte(configContent), 0o600)
 	if err != nil {
 		return fmt.Errorf("error creating netmux config file")
 	}

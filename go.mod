@@ -3,15 +3,17 @@ module go.digitalcircle.com.br/dc/netmux
 go 1.21
 
 require (
+	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/jedib0t/go-pretty/v6 v6.4.7
+	github.com/miekg/dns v1.1.56
 	github.com/nyaosorg/go-windows-su v0.2.1
 	github.com/prometheus/client_golang v1.16.0
 	github.com/stretchr/testify v1.8.2
 	github.com/twmb/franz-go v1.14.4
 	github.com/urfave/cli/v2 v2.25.7
-	golang.org/x/sync v0.2.0
+	golang.org/x/sync v0.3.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.26.2
@@ -70,12 +72,14 @@ require (
 	github.com/xlab/treeprint v1.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
-	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/mod v0.12.0 // indirect
+	golang.org/x/net v0.15.0 // indirect
 	golang.org/x/oauth2 v0.6.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/term v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/term v0.12.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
+	golang.org/x/tools v0.13.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
