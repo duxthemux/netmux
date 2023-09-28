@@ -28,7 +28,7 @@ spec:
           image: prom/prometheus
           args:
             - '--storage.tsdb.retention=6h'
-            - '--storage.tsdb.path=/prometheus'
+            - '--storage.tsdb.path=/data'
             - '--config.file=/etc/prometheus/prometheus.yml'
           ports:
             - name: web
@@ -37,7 +37,7 @@ spec:
             - name: prometheus-userconfig-volume
               mountPath: /etc/prometheus
             - name: prometheus
-              mountPath: /prometheus
+              mountPath: /data
       restartPolicy: Always
 
       volumes:

@@ -8,11 +8,13 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -29,10 +31,29 @@ type KubernetesInfo struct {
 	Endpoint  string `json:"endpoint,omitempty"  yaml:"endpoint,omitempty"`
 	Context   string `json:"context,omitempty"   yaml:"context,omitempty"`
 	Port      string `json:"port,omitempty"      yaml:"port,omitempty"`
+	Kubectl   string `json:"kubectl"             yaml:"kubectl"`
+	User      string `json:"user"                yaml:"user"`
 }
 
 func (k KubernetesInfo) IsZeroValue() bool {
 	return k.Config == "" || k.Namespace == "" || k.Context == "" || k.Endpoint == ""
+}
+
+type portForwardAPodRequest struct {
+	// RestConfig is the kubernetes userconfig
+	RestConfig *rest.Config
+	// Pod is the selected pod for this port forwarding
+	Pod corev1.Pod
+	// LocalPort is the local port that will be selected to expose the PodPort
+	LocalPort int
+	// PodPort is the target port for the pod
+	PodPort int
+	// Steams configures where to write or read input from
+	Streams genericclioptions.IOStreams
+	// StopCh is the channel used to manage the port forward lifecycle
+	StopCh <-chan struct{}
+	// ReadyCh communicates when the tunnel is ready to receive traffic
+	ReadyCh chan struct{}
 }
 
 type PortForwarder struct {
@@ -60,23 +81,6 @@ func (p *PortForwarder) findAvailableLocalPort() (int, error) {
 	return tcpAddr.Port, nil
 }
 
-type portForwardAPodRequest struct {
-	// RestConfig is the kubernetes userconfig
-	RestConfig *rest.Config
-	// Pod is the selected pod for this port forwarding
-	Pod corev1.Pod
-	// LocalPort is the local port that will be selected to expose the PodPort
-	LocalPort int
-	// PodPort is the target port for the pod
-	PodPort int
-	// Steams configures where to write or read input from
-	Streams genericclioptions.IOStreams
-	// StopCh is the channel used to manage the port forward lifecycle
-	StopCh <-chan struct{}
-	// ReadyCh communicates when the tunnel is ready to receive traffic
-	ReadyCh chan struct{}
-}
-
 // resolveClientConfig will retrieve a restconfig, but considering files with
 // multiple contexts also.
 func resolveClientConfig(configFile string, context string) (*rest.Config, error) {
@@ -98,98 +102,18 @@ func resolveClientConfig(configFile string, context string) (*rest.Config, error
 	return config, nil
 }
 
-func (p *PortForwarder) Close() error {
-	close(p.stopCh)
-
-	return nil
-}
-
 const PFWaitTimeout = time.Second * 5
 
 //nolint:funlen
 func (p *PortForwarder) Start(ctx context.Context, kinfo KubernetesInfo) error {
-	stopCh := make(chan struct{}, 1)
-	p.stopCh = stopCh
-
-	// use the current context in kubeconfig
-	config, err := resolveClientConfig(kinfo.Config, kinfo.Context)
-	if err != nil {
-		return fmt.Errorf("error resolving client userconfig: %w", err)
+	switch {
+	case kinfo.User != "":
+		slog.Debug("calling port forward via sudo", "user", kinfo.User)
+		return p.startSudo(ctx, kinfo)
+	default:
+		slog.Debug("calling port forward via api")
+		return p.startApi(ctx, kinfo)
 	}
-
-	lport, err := p.findAvailableLocalPort()
-	if err != nil {
-		return fmt.Errorf("error finding available local port: %w", err)
-	}
-
-	rport, err := strconv.Atoi(kinfo.Port)
-	if err != nil {
-		return fmt.Errorf("error converting port to int: %w", err)
-	}
-
-	pfreq := &portForwardAPodRequest{
-		RestConfig: config,
-		Pod: corev1.Pod{
-			TypeMeta: metav1.TypeMeta{},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      kinfo.Endpoint,
-				Namespace: kinfo.Namespace,
-			},
-		},
-		LocalPort: lport,
-		PodPort:   rport,
-		Streams:   genericclioptions.IOStreams{},
-		StopCh:    nil,
-		ReadyCh:   nil,
-	}
-
-	pfreq.RestConfig = config
-
-	// stopCh control the port forwarding lifecycle. When it gets closed the
-	// port forward will terminate
-
-	// readyCh communicate when the port forward is ready to get traffic
-	readyCh := make(chan struct{})
-	errCh := make(chan error)
-	// stream is used to tell the port forwarder where to place its output or
-	// where to expect input if needed. For the port forwarding we just need
-	// the output eventually
-	stream := genericclioptions.IOStreams{
-		In:     os.Stdin,
-		Out:    os.Stdout,
-		ErrOut: os.Stderr,
-	}
-
-	pfreq.Streams = stream
-	pfreq.ReadyCh = readyCh
-	pfreq.StopCh = stopCh
-	err = checkPodOrService(ctx, pfreq)
-
-	if err != nil {
-		return fmt.Errorf("error checking pod or service: %w", err)
-	}
-
-	go func() {
-		err := portForwardAPod(ctx, pfreq)
-		if err != nil {
-			slog.Warn("error while port forwarding", "err", err)
-			errCh <- err
-		}
-	}()
-
-	select {
-	case err = <-errCh:
-		if err != nil {
-			return fmt.Errorf("error port forwarding: %w", err)
-		}
-	case <-time.After(PFWaitTimeout):
-	case <-readyCh:
-	}
-	slog.Info("Port forwarding is ready to get traffic. have fun!")
-
-	p.Port = lport
-
-	return nil
 }
 
 func checkPodOrService(ctx context.Context, req *portForwardAPodRequest) error {
@@ -280,4 +204,153 @@ func portForwardAPod(ctx context.Context, req *portForwardAPodRequest) error {
 
 func New() *PortForwarder {
 	return &PortForwarder{}
+}
+
+func (p *PortForwarder) startSudo(ctx context.Context, kinfo KubernetesInfo) error {
+	kubectlCmdTentative := "kubectl"
+	if kinfo.Kubectl != "" {
+		kubectlCmdTentative = kinfo.Kubectl
+	}
+
+	kubectlCmd, err := exec.LookPath(kubectlCmdTentative)
+	if err != nil {
+		return fmt.Errorf("kubectl not found in path: %w", err)
+	}
+
+	port, err := p.findAvailableLocalPort()
+	if err != nil {
+		return fmt.Errorf("could not allocate port: %w", err)
+	}
+	p.Port = port
+
+	cmdLine := fmt.Sprintf("KUBECONFIG=%s %s port-forward  --context=%s --namespace=%s %s %v:%s\n",
+		kinfo.Config,
+		kubectlCmd,
+		kinfo.Context,
+		kinfo.Namespace,
+		kinfo.Endpoint,
+		port,
+		kinfo.Port)
+
+	slog.Debug("port forward as sudo cmdline", "cmdline", cmdLine)
+	cmd := exec.CommandContext(ctx, "su", "-", kinfo.User)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	writer, err := cmd.StdinPipe()
+	if err != nil {
+		return fmt.Errorf("error piping stdin: %w", err)
+	}
+
+	if err = cmd.Start(); err != nil {
+		return fmt.Errorf("error starting port forward command: %w", err)
+	}
+
+	slog.Debug("sending cmd", "cmd", cmdLine)
+
+	_, err = writer.Write([]byte(cmdLine))
+	if err != nil {
+		return fmt.Errorf("error piping stdin: %w", err)
+	}
+
+	bo := backoff.NewExponentialBackOff()
+	bo.MaxElapsedTime = time.Second * 15
+
+	if err := backoff.Retry(func() error {
+		con, err := net.Dial("tcp", fmt.Sprintf("localhost:%v", port))
+		if err != nil {
+			return err
+		}
+
+		_ = con.Close()
+		return nil
+	}, bo); err != nil {
+		return fmt.Errorf("error confirming port is available: %w", err)
+	}
+
+	return nil
+}
+
+func (p *PortForwarder) startApi(ctx context.Context, kinfo KubernetesInfo) error {
+	stopCh := make(chan struct{}, 1)
+	p.stopCh = stopCh
+
+	// use the current context in kubeconfig
+	config, err := resolveClientConfig(kinfo.Config, kinfo.Context)
+	if err != nil {
+		return fmt.Errorf("error resolving client userconfig: %w", err)
+	}
+
+	lport, err := p.findAvailableLocalPort()
+	if err != nil {
+		return fmt.Errorf("error finding available local port: %w", err)
+	}
+
+	rport, err := strconv.Atoi(kinfo.Port)
+	if err != nil {
+		return fmt.Errorf("error converting port to int: %w", err)
+	}
+
+	pfreq := &portForwardAPodRequest{
+		RestConfig: config,
+		Pod: corev1.Pod{
+			TypeMeta: metav1.TypeMeta{},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      kinfo.Endpoint,
+				Namespace: kinfo.Namespace,
+			},
+		},
+		LocalPort: lport,
+		PodPort:   rport,
+		Streams:   genericclioptions.IOStreams{},
+		StopCh:    nil,
+		ReadyCh:   nil,
+	}
+
+	pfreq.RestConfig = config
+
+	// stopCh control the port forwarding lifecycle. When it gets closed the
+	// port forward will terminate
+
+	// readyCh communicate when the port forward is ready to get traffic
+	readyCh := make(chan struct{})
+	errCh := make(chan error)
+	// stream is used to tell the port forwarder where to place its output or
+	// where to expect input if needed. For the port forwarding we just need
+	// the output eventually
+	stream := genericclioptions.IOStreams{
+		In:     os.Stdin,
+		Out:    os.Stdout,
+		ErrOut: os.Stderr,
+	}
+
+	pfreq.Streams = stream
+	pfreq.ReadyCh = readyCh
+	pfreq.StopCh = stopCh
+	err = checkPodOrService(ctx, pfreq)
+
+	if err != nil {
+		return fmt.Errorf("error checking pod or service: %w", err)
+	}
+
+	go func() {
+		err := portForwardAPod(ctx, pfreq)
+		if err != nil {
+			slog.Warn("error while port forwarding", "err", err)
+			errCh <- err
+		}
+	}()
+
+	select {
+	case err = <-errCh:
+		if err != nil {
+			return fmt.Errorf("error port forwarding: %w", err)
+		}
+	case <-time.After(PFWaitTimeout):
+	case <-readyCh:
+	}
+	slog.Info("Port forwarding is ready to get traffic. have fun!")
+
+	p.Port = lport
+
+	return nil
 }

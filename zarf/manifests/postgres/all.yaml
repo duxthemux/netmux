@@ -8,17 +8,18 @@ data:
   POSTGRES_DB: "postgres"
   POSTGRES_USER: "postgres"
   POSTGRES_PASSWORD: "postgres"
+  PGDATA: "/data/postgres"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: postgres-pvc
+  name: postgres
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 8Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -40,16 +41,16 @@ spec:
             - configMapRef:
                 name: postgres-userconfig
           image: postgres:latest
-          imagePullPolicy: "IfNotPresent"
+          imagePullPolicy: Always
           ports:
             - containerPort: 5432
           volumeMounts:
-            - mountPath: /var/lib/postgresql/data
-              name: postgresdb
+            - mountPath: /data
+              name: postgres
       volumes:
-        - name: postgresdb
+        - name: postgres
           persistentVolumeClaim:
-            claimName: postgres-pvc
+            claimName: postgres
 ---
 kind: Service
 apiVersion: v1

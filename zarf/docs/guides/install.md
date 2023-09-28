@@ -200,7 +200,23 @@ endpoints:
       endpoint: netmux
       port: 50000
       context: orbstack
+  - name: oci
+    endpoint: netmux:50000
+    kubernetes:
+      config: /Users/psimao/.kube/oci
+      namespace: netmux
+      endpoint: service/netmux # netmux
+      port: 50000
+      context: context-cijdv4im6wa
+      user: psimao
+      kubectl: /opt/homebrew/bin/kubectl
 ```
+
+> Important: please note, that if you need to use special authenticators to connect to k8s cluster, you may 
+> add user and kubectl path to your endpoint config. In this case netmux will spawn portforwad by calling
+> kubectl impersonating the user as named in the config - so we expect to find the cloud management cli tool
+> in the path, allowing proper authentication and port forward to be setup. If these values are not provided,
+> netmux will use the traditional API approach.
 
 ## Installing on Kubernetes
 

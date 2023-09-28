@@ -35,7 +35,7 @@ func main() {
 		_, _ = io.Copy(buf, request.Body)
 		buf.WriteString("\n==EOR==\n")
 		_, _ = responseWriter.Write(buf.Bytes())
-		//time.Sleep(time.Second * 3)
+		// time.Sleep(time.Second * 3)
 	})
 
 	slog.Info("Sample Reverse Service")
