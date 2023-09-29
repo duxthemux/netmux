@@ -7,8 +7,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"go.digitalcircle.com.br/dc/netmux/app/nx-daemon/daemon"
-	"go.digitalcircle.com.br/dc/netmux/business/caroot"
+	"github.com/duxthemux/netmux/app/nx-daemon/daemon"
+	"github.com/duxthemux/netmux/business/caroot"
 )
 
 type API struct {

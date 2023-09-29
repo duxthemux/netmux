@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"go.digitalcircle.com.br/dc/netmux/business/networkallocator/ipallocator"
+	"github.com/duxthemux/netmux/business/networkallocator/ipallocator"
 )
 
 func TestGetAddrs(t *testing.T) {

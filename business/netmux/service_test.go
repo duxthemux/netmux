@@ -13,7 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"go.digitalcircle.com.br/dc/netmux/business/netmux"
+	"github.com/duxthemux/netmux/business/netmux"
 )
 
 const MaxWaitTime = time.Second * 5

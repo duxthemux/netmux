@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"go.digitalcircle.com.br/dc/netmux/app/nx-cli/installer"
+	"github.com/duxthemux/netmux/app/nx-cli/installer"
 )
 
 const alpineOsRelease = `NAME="Alpine Linux"

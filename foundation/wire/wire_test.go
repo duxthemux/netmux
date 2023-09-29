@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"go.digitalcircle.com.br/dc/netmux/foundation/wire"
+	"github.com/duxthemux/netmux/foundation/wire"
 )
 
 //nolint:paralleltest

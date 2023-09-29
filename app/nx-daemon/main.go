@@ -14,14 +14,14 @@ import (
 	"golang.org/x/sync/errgroup"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	configlib "go.digitalcircle.com.br/dc/netmux/app/nx-daemon/config"
-	"go.digitalcircle.com.br/dc/netmux/app/nx-daemon/daemon"
-	"go.digitalcircle.com.br/dc/netmux/business/caroot"
-	"go.digitalcircle.com.br/dc/netmux/business/networkallocator"
-	"go.digitalcircle.com.br/dc/netmux/foundation/buildinfo"
-	"go.digitalcircle.com.br/dc/netmux/foundation/metrics"
+	configlib "github.com/duxthemux/netmux/app/nx-daemon/config"
+	"github.com/duxthemux/netmux/app/nx-daemon/daemon"
+	"github.com/duxthemux/netmux/business/caroot"
+	"github.com/duxthemux/netmux/business/networkallocator"
+	"github.com/duxthemux/netmux/foundation/buildinfo"
+	"github.com/duxthemux/netmux/foundation/metrics"
 
-	"go.digitalcircle.com.br/dc/netmux/app/nx-daemon/webserver"
+	"github.com/duxthemux/netmux/app/nx-daemon/webserver"
 )
 
 const (

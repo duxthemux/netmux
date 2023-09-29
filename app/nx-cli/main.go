@@ -13,7 +13,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/urfave/cli/v2"
 
-	"go.digitalcircle.com.br/dc/netmux/app/nx-cli/installer"
+	"github.com/duxthemux/netmux/app/nx-cli/installer"
 )
 
 type ListOutput struct {

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	"go.digitalcircle.com.br/dc/netmux/foundation/buildinfo"
+	"github.com/duxthemux/netmux/foundation/buildinfo"
 )
 
 func main() {

@@ -11,10 +11,10 @@ import (
 	"net"
 	"runtime"
 
-	"go.digitalcircle.com.br/dc/netmux/foundation/memstore"
-	"go.digitalcircle.com.br/dc/netmux/foundation/metrics"
-	"go.digitalcircle.com.br/dc/netmux/foundation/pipe"
-	"go.digitalcircle.com.br/dc/netmux/foundation/wire"
+	"github.com/duxthemux/netmux/foundation/memstore"
+	"github.com/duxthemux/netmux/foundation/metrics"
+	"github.com/duxthemux/netmux/foundation/pipe"
+	"github.com/duxthemux/netmux/foundation/wire"
 )
 
 func helperIoClose(closer io.Closer) {

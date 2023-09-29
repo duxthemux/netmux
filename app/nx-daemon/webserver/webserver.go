@@ -12,10 +12,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"go.digitalcircle.com.br/dc/netmux/app/nx-daemon/webserver/api"
+	"github.com/duxthemux/netmux/app/nx-daemon/webserver/api"
 
-	"go.digitalcircle.com.br/dc/netmux/app/nx-daemon/daemon"
-	"go.digitalcircle.com.br/dc/netmux/business/caroot"
+	"github.com/duxthemux/netmux/app/nx-daemon/daemon"
+	"github.com/duxthemux/netmux/business/caroot"
 )
 
 type WebServer struct {

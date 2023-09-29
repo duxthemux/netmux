@@ -1,4 +1,4 @@
-module go.digitalcircle.com.br/dc/netmux
+module github.com/duxthemux/netmux
 
 go 1.21
 
