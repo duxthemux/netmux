@@ -1,7 +1,9 @@
 package shell
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -21,4 +23,5 @@ func shStdio(cmdline string) error {
 type Shell interface {
 	IfconfigAddAlias(iface string, ipaddr string, netmask string, gw string) error
 	IfconfigRemAlias(iface string, ipaddr string) error
+	CmdAs(ctx context.Context, user string) (io.Writer, error)
 }

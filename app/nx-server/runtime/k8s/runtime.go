@@ -14,7 +14,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"go.digitalcircle.com.br/dc/netmux/business/netmux"
+	"github.com/duxthemux/netmux/business/netmux"
 )
 
 type Opts struct {

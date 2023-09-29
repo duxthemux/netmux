@@ -10,10 +10,10 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"go.digitalcircle.com.br/dc/netmux/app/nx-server/runtime/k8s"
-	"go.digitalcircle.com.br/dc/netmux/business/netmux"
-	"go.digitalcircle.com.br/dc/netmux/foundation/buildinfo"
-	"go.digitalcircle.com.br/dc/netmux/foundation/metrics"
+	"github.com/duxthemux/netmux/app/nx-server/runtime/k8s"
+	"github.com/duxthemux/netmux/business/netmux"
+	"github.com/duxthemux/netmux/foundation/buildinfo"
+	"github.com/duxthemux/netmux/foundation/metrics"
 )
 
 const (

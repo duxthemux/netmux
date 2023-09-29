@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	"go.digitalcircle.com.br/dc/netmux/business/networkallocator/dnsallocator"
-	"go.digitalcircle.com.br/dc/netmux/business/networkallocator/ipallocator"
+	"github.com/duxthemux/netmux/business/networkallocator/dnsallocator"
+	"github.com/duxthemux/netmux/business/networkallocator/ipallocator"
 )
 
 type NetworkAllocator struct {

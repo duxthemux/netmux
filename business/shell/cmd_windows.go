@@ -26,6 +26,24 @@ func (w *winShell) IfconfigRemAlias(iface string, ipaddr string) error {
 	return shStdio(fmt.Sprintf("netsh interface ip delete address %s %s", iface, ipaddr))
 }
 
+func (w *winShell) CmdAs(ctx context.Context, user string) (io.Writer, error) {
+
+	cmd := exec.CommandContext(ctx, "runas", "/user:"+user, "cmd")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	writer, err := cmd.StdinPipe()
+	if err != nil {
+		return nil, fmt.Errorf("error piping stdin: %w", err)
+	}
+
+	if err = cmd.Start(); err != nil {
+		return nil, fmt.Errorf("error starting port forward command: %w", err)
+	}
+
+	return writer, nil
+
+}
+
 func New() Shell {
 	return &winShell{}
 }

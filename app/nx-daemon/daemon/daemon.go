@@ -10,13 +10,13 @@ import (
 	"strconv"
 	"strings"
 
-	"go.digitalcircle.com.br/dc/netmux/app/nx-daemon/config"
-	"go.digitalcircle.com.br/dc/netmux/business/netmux"
-	"go.digitalcircle.com.br/dc/netmux/business/networkallocator"
-	"go.digitalcircle.com.br/dc/netmux/business/networkallocator/dnsallocator"
-	"go.digitalcircle.com.br/dc/netmux/business/portforwarder"
-	"go.digitalcircle.com.br/dc/netmux/foundation/memstore"
-	"go.digitalcircle.com.br/dc/netmux/foundation/metrics"
+	"github.com/duxthemux/netmux/app/nx-daemon/config"
+	"github.com/duxthemux/netmux/business/netmux"
+	"github.com/duxthemux/netmux/business/networkallocator"
+	"github.com/duxthemux/netmux/business/networkallocator/dnsallocator"
+	"github.com/duxthemux/netmux/business/portforwarder"
+	"github.com/duxthemux/netmux/foundation/memstore"
+	"github.com/duxthemux/netmux/foundation/metrics"
 )
 
 var (

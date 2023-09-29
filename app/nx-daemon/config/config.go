@@ -6,7 +6,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"go.digitalcircle.com.br/dc/netmux/business/portforwarder"
+	"github.com/duxthemux/netmux/business/portforwarder"
 )
 
 // Config represents the agent central userconfig file.

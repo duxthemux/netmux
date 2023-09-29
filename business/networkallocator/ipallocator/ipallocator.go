@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"sync"
 
-	shell2 "go.digitalcircle.com.br/dc/netmux/business/shell"
+	shell2 "github.com/duxthemux/netmux/business/shell"
 )
 
 type IPAllocator struct {
