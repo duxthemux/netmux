@@ -23,6 +23,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/portforward"
 	"k8s.io/client-go/transport/spdy"
+
+	"github.com/duxthemux/netmux/business/shell"
 )
 
 type KubernetesInfo struct {
@@ -233,21 +235,14 @@ func (p *PortForwarder) startSudo(ctx context.Context, kinfo KubernetesInfo) err
 		kinfo.Port)
 
 	slog.Debug("port forward as sudo cmdline", "cmdline", cmdLine)
-	cmd := exec.CommandContext(ctx, "su", "-", kinfo.User)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	writer, err := cmd.StdinPipe()
+
+	sh := shell.New()
+	shellWriter, err := sh.CmdAs(ctx, kinfo.User)
 	if err != nil {
-		return fmt.Errorf("error piping stdin: %w", err)
+		return fmt.Errorf("could not create user shell: %w", err)
 	}
 
-	if err = cmd.Start(); err != nil {
-		return fmt.Errorf("error starting port forward command: %w", err)
-	}
-
-	slog.Debug("sending cmd", "cmd", cmdLine)
-
-	_, err = writer.Write([]byte(cmdLine))
+	_, err = shellWriter.Write([]byte(cmdLine))
 	if err != nil {
 		return fmt.Errorf("error piping stdin: %w", err)
 	}
