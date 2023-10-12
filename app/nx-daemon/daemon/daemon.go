@@ -200,7 +200,7 @@ func (d *Daemon) Disconnect(endpoint string) error {
 }
 
 func (d *Daemon) Exit() {
-	os.Exit(0)
+	os.Exit(1)
 }
 
 func (d *Daemon) CleanUp() error {
@@ -388,4 +388,8 @@ func (d *Daemon) stopIndividualService(endpoint string, svc string) error {
 
 func (d *Daemon) DNSEntries() []dnsallocator.DNSEntry {
 	return d.networkAllocator.DNSEntries()
+}
+
+func (d *Daemon) Reload() error {
+	return d.cfg.Load("")
 }

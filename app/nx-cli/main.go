@@ -9,6 +9,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
+	"slices"
+	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/urfave/cli/v2"
@@ -16,30 +19,48 @@ import (
 	"github.com/duxthemux/netmux/app/nx-cli/installer"
 )
 
+type Endpoint struct {
+	Name       string `json:"name"`
+	Endpoint   string `json:"endpoint"`
+	Kubernetes struct {
+		Config    string `json:"config"`
+		Namespace string `json:"namespace"`
+		Endpoint  string `json:"endpoint"`
+		Context   string `json:"context"`
+		Port      string `json:"port"`
+	} `json:"kubernetes"`
+	Status  string `json:"status"`
+	Bridges []struct {
+		Namespace     string `json:"namespace"`
+		Name          string `json:"name"`
+		LocalAddr     string `json:"localAddr"`
+		LocalPort     string `json:"localPort"`
+		ContainerAddr string `json:"containerAddr"`
+		ContainerPort string `json:"containerPort"`
+		Direction     string `json:"direction"`
+		Family        string `json:"family"`
+		Status        string `json:"status"`
+	} `json:"bridges"`
+}
+
+type ListRow struct {
+	Type   string
+	Name   string
+	Parent string
+	Desc   string
+	Status string
+}
+
+func (l *ListRow) String() string {
+	if l.Type == "SVC" {
+		return fmt.Sprintf("%s.%s", l.Parent, l.Name)
+	}
+
+	return l.Name
+}
+
 type ListOutput struct {
-	Endpoints []struct {
-		Name       string `json:"name"`
-		Endpoint   string `json:"endpoint"`
-		Kubernetes struct {
-			Config    string `json:"config"`
-			Namespace string `json:"namespace"`
-			Endpoint  string `json:"endpoint"`
-			Context   string `json:"context"`
-			Port      string `json:"port"`
-		} `json:"kubernetes"`
-		Status  string `json:"status"`
-		Bridges []struct {
-			Namespace     string `json:"namespace"`
-			Name          string `json:"name"`
-			LocalAddr     string `json:"localAddr"`
-			LocalPort     string `json:"localPort"`
-			ContainerAddr string `json:"containerAddr"`
-			ContainerPort string `json:"containerPort"`
-			Direction     string `json:"direction"`
-			Family        string `json:"family"`
-			Status        string `json:"status"`
-		} `json:"bridges"`
-	} `json:"endpoints"`
+	Endpoints []Endpoint `json:"endpoints"`
 }
 
 func httpGet(ctx context.Context, cli http.Client, url string) ([]byte, error) {
@@ -71,7 +92,8 @@ func httpGet(ctx context.Context, cli http.Client, url string) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func list(ctx context.Context, cli http.Client) error {
+func list(ctx context.Context, cli http.Client, filter string) error {
+
 	responseBytes, err := httpGet(ctx, cli, "https://nx/api/v1/services/")
 	if err != nil {
 		return err
@@ -82,44 +104,92 @@ func list(ctx context.Context, cli http.Client) error {
 		return fmt.Errorf("error unmarshalling status: %w", err)
 	}
 
-	tbWriter := table.NewWriter()
-	tbWriter.SetOutputMirror(os.Stdout)
+	var rx *regexp.Regexp
 
-	defer tbWriter.Render()
+	if filter != "" {
+		filter = strings.ReplaceAll(filter, "+", ".*")
+		rx, err = regexp.Compile(filter)
+		if err != nil {
+			return err
+		}
+	}
 
-	tbWriter.AppendHeader(table.Row{"#", "Name", "Parent", "Description", "Status"})
-
+	rows := make([]ListRow, 0)
 	for _, endpoint := range out.Endpoints {
-		tbWriter.AppendRow(table.Row{
-			"EP",
-			endpoint.Name,
-			"",
-			fmt.Sprintf(
+		row := ListRow{
+			Type:   "EP",
+			Name:   endpoint.Name,
+			Parent: "--",
+			Desc: fmt.Sprintf(
 				"%s %s.%s:%s",
 				endpoint.Kubernetes.Context,
 				endpoint.Kubernetes.Namespace,
 				endpoint.Kubernetes.Endpoint,
 				endpoint.Kubernetes.Port),
-			endpoint.Status,
-		})
+			Status: endpoint.Status,
+		}
+
+		if rx != nil {
+			if rx.MatchString(row.String()) {
+				rows = append(rows, row)
+			}
+		} else {
+			rows = append(rows, row)
+		}
 
 		for _, svc := range endpoint.Bridges {
-			tbWriter.AppendRow(
-				table.Row{
-					"SVC",
+
+			row := ListRow{
+				Type:   "SVC",
+				Name:   svc.Name,
+				Parent: endpoint.Name,
+				Desc: fmt.Sprintf(
+					"%s %s: %s:%s => %s:%s",
 					svc.Name,
-					endpoint.Name,
-					fmt.Sprintf(
-						"%s %s: %s:%s => %s:%s",
-						svc.Name,
-						svc.Direction,
-						svc.LocalAddr,
-						svc.LocalPort,
-						svc.ContainerAddr,
-						svc.ContainerPort),
-					svc.Status,
-				})
+					svc.Direction,
+					svc.LocalAddr,
+					svc.LocalPort,
+					svc.ContainerAddr,
+					svc.ContainerPort),
+				Status: svc.Status,
+			}
+
+			if rx != nil {
+				if rx.MatchString(row.String()) {
+					rows = append(rows, row)
+				}
+			} else {
+				rows = append(rows, row)
+			}
+
 		}
+	}
+
+	slices.SortFunc(rows, func(a, b ListRow) int {
+		if a.Parent == b.Parent {
+			return strings.Compare(a.Name, b.Name)
+		}
+
+		return strings.Compare(a.Parent, b.Parent)
+	})
+
+	tbWriter := table.NewWriter()
+	tbWriter.SetOutputMirror(os.Stdout)
+
+	defer tbWriter.Render()
+
+	tbWriter.AppendHeader(table.Row{"#", "K", "Name", "Parent", "Description", "Status"})
+
+	for i, row := range rows {
+		tbWriter.AppendRow(table.Row{
+			fmt.Sprintf("%03d", i),
+			row.Type,
+			row.Name,
+			row.Parent,
+			row.Desc,
+			row.Status,
+		})
+
 	}
 
 	return nil
@@ -155,6 +225,12 @@ func exit(ctx context.Context, cli http.Client) error {
 	return err
 }
 
+func reload(ctx context.Context, cli http.Client) error {
+	_, err := httpGet(ctx, cli, "https://nx/api/v1/misc/reload")
+
+	return err
+}
+
 func cleanup(ctx context.Context, cli http.Client) error {
 	_, err := httpGet(ctx, cli, "https://nx/api/v1/misc/cleanup")
 
@@ -165,6 +241,9 @@ func cleanup(ctx context.Context, cli http.Client) error {
 func main() {
 	httpCli := http.Client{}
 	ctx := context.Background()
+
+	listFilter := ""
+
 	app := &cli.App{
 		Name:  "nx",
 		Usage: "netmux command line client",
@@ -188,9 +267,27 @@ func main() {
 			{
 				Name:    "list",
 				Aliases: []string{"ls", "l"},
-				Usage:   "Lists known info",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:        "filter",
+						Category:    "filter",
+						DefaultText: "",
+						FilePath:    "",
+						Usage:       "",
+						Required:    false,
+						Hidden:      false,
+						HasBeenSet:  false,
+						Value:       "",
+						Destination: &listFilter,
+						Aliases:     nil,
+						EnvVars:     nil,
+						TakesFile:   false,
+						Action:      nil,
+					},
+				},
+				Usage: "Lists known info",
 				Action: func(cCtx *cli.Context) error {
-					return list(ctx, httpCli)
+					return list(ctx, httpCli, listFilter)
 				},
 			},
 			{
@@ -231,6 +328,14 @@ func main() {
 				Usage:   "Stops the daemon",
 				Action: func(cCtx *cli.Context) error {
 					return exit(ctx, httpCli)
+				},
+			},
+			{
+				Name:    "reload",
+				Aliases: []string{},
+				Usage:   "Reload the daemon config",
+				Action: func(cCtx *cli.Context) error {
+					return reload(ctx, httpCli)
 				},
 			},
 			{

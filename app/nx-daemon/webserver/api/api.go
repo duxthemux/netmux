@@ -146,6 +146,15 @@ func (a *API) pluginConfig(_ context.Context, router *mux.Router, caRoot *caroot
 }
 
 func (a *API) pluginMisc(_ context.Context, router *mux.Router) {
+	router.Name("miscReload").
+		Methods(http.MethodGet).
+		Path("/reload").
+		HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
+			if err := a.Service.Reload(); err != nil {
+				http.Error(responseWriter, err.Error(), http.StatusInternalServerError)
+			}
+		})
+
 	router.Name("miscExit").
 		Methods(http.MethodGet).
 		Path("/exit").

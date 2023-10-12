@@ -22,6 +22,41 @@ type Config struct {
 	Endpoints Endpoints `json:"endpoints" yaml:"endpoints,omitempty"`
 }
 
+func (c *Config) Load(fname string) error {
+	if fname == "" {
+		fname = DefaultConfigPath
+	}
+
+	if os.Getenv("CONFIG") != "" {
+		fname = os.Getenv("CONFIG")
+	}
+
+	fileBytes, err := os.ReadFile(fname)
+	if err != nil {
+		return fmt.Errorf("error loading userconfig: %w", err)
+	}
+
+	err = yaml.Unmarshal(fileBytes, c)
+
+	if err != nil {
+		return fmt.Errorf("error unmashaling userconfig: %w", err)
+	}
+
+	if c.IFace == "" {
+		c.IFace = DefaultIface
+	}
+
+	if c.Address == "" {
+		c.Address = "localhost:50000"
+	}
+
+	if c.Network == "" {
+		c.Network = "10.10.10.0/24"
+	}
+
+	return nil
+}
+
 type Endpoints []Endpoint
 
 func (e Endpoints) FindByName(name string) (Endpoint, bool) {
@@ -66,38 +101,4 @@ func (t *Config) ContextByName(n string) Endpoint {
 	}
 
 	return Endpoint{}
-}
-
-func Load() (*Config, error) {
-	cfg := New()
-	fname := DefaultConfigPath
-
-	if os.Getenv("CONFIG") != "" {
-		fname = os.Getenv("CONFIG")
-	}
-
-	fileBytes, err := os.ReadFile(fname)
-	if err != nil {
-		return cfg, fmt.Errorf("error loading userconfig: %w", err)
-	}
-
-	err = yaml.Unmarshal(fileBytes, cfg)
-
-	if err != nil {
-		return cfg, fmt.Errorf("error unmashaling userconfig: %w", err)
-	}
-
-	if cfg.IFace == "" {
-		cfg.IFace = DefaultIface
-	}
-
-	if cfg.Address == "" {
-		cfg.Address = "localhost:50000"
-	}
-
-	if cfg.Network == "" {
-		cfg.Network = "10.10.10.0/24"
-	}
-
-	return cfg, nil
 }
