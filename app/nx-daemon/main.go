@@ -60,8 +60,9 @@ func run() error {
 
 	slog.Info(buildinfo.String("nx-daemon"))
 
-	agentConfig, err := configlib.Load()
-	if err != nil {
+	agentConfig := configlib.New()
+
+	if err := agentConfig.Load(""); err != nil {
 		slog.Warn(fmt.Sprintf("error loading userconfig: %s", err.Error()))
 	}
 
