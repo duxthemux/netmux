@@ -120,13 +120,7 @@ func (a *API) pluginConfig(_ context.Context, router *mux.Router, caRoot *caroot
 		Methods(http.MethodGet).
 		Path("/hosts").
 		HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
-			cfg := a.Service.DNSEntries()
-			responseWriter.Header().Set("Content-Type", "application/json")
-
-			err := json.NewEncoder(responseWriter).Encode(cfg)
-			if err != nil {
-				http.Error(responseWriter, err.Error(), http.StatusInternalServerError)
-			}
+			responseWriter.WriteHeader(http.StatusNotImplemented)
 		})
 
 	router.Name("configCa").

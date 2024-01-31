@@ -29,7 +29,6 @@ func (w *winShell) IfconfigRemAlias(iface string, ipaddr string) error {
 }
 
 func (w *winShell) CmdAs(ctx context.Context, user string) (io.Writer, error) {
-
 	cmd := exec.CommandContext(ctx, "runas", "/user:"+user, "cmd")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -43,7 +42,6 @@ func (w *winShell) CmdAs(ctx context.Context, user string) (io.Writer, error) {
 	}
 
 	return writer, nil
-
 }
 
 func New() Shell {

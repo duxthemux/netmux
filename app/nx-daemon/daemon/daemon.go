@@ -13,7 +13,6 @@ import (
 	"github.com/duxthemux/netmux/app/nx-daemon/config"
 	"github.com/duxthemux/netmux/business/netmux"
 	"github.com/duxthemux/netmux/business/networkallocator"
-	"github.com/duxthemux/netmux/business/networkallocator/dnsallocator"
 	"github.com/duxthemux/netmux/business/portforwarder"
 	"github.com/duxthemux/netmux/foundation/memstore"
 	"github.com/duxthemux/netmux/foundation/metrics"
@@ -386,9 +385,9 @@ func (d *Daemon) stopIndividualService(endpoint string, svc string) error {
 	return nil
 }
 
-func (d *Daemon) DNSEntries() []dnsallocator.DNSEntry {
-	return d.networkAllocator.DNSEntries()
-}
+// func (d *Daemon) DNSEntries() []dnsallocator.DNSEntry {
+// 	return d.networkAllocator.DNSEntries()
+// }
 
 func (d *Daemon) Reload() error {
 	return d.cfg.Load("")

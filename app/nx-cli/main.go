@@ -93,7 +93,6 @@ func httpGet(ctx context.Context, cli http.Client, url string) ([]byte, error) {
 }
 
 func list(ctx context.Context, cli http.Client, filter string) error {
-
 	responseBytes, err := httpGet(ctx, cli, "https://nx/api/v1/services/")
 	if err != nil {
 		return err
@@ -189,7 +188,6 @@ func list(ctx context.Context, cli http.Client, filter string) error {
 			row.Desc,
 			row.Status,
 		})
-
 	}
 
 	return nil

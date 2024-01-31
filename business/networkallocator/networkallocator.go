@@ -3,17 +3,16 @@ package networkallocator
 import (
 	"fmt"
 	"log/slog"
-	"strings"
 	"sync"
 
-	"github.com/duxthemux/netmux/business/networkallocator/dnsallocator"
+	"github.com/duxthemux/netmux/business/networkallocator/dnsserver"
 	"github.com/duxthemux/netmux/business/networkallocator/ipallocator"
 )
 
 type NetworkAllocator struct {
 	sync.Mutex
-	ipAllocator  *ipallocator.IPAllocator
-	dnsAllocator *dnsallocator.DNSAllocator
+	ipAllocator *ipallocator.IPAllocator
+	dnsServer   *dnsserver.Server
 }
 
 func (n *NetworkAllocator) GetIP(names ...string) (string, error) {
@@ -21,12 +20,7 @@ func (n *NetworkAllocator) GetIP(names ...string) (string, error) {
 	defer n.Unlock()
 
 	for _, name := range names {
-		existingEntry := n.dnsAllocator.Entries().FindByName(name)
-		if len(existingEntry.Names) > 0 {
-			if err := n.dnsAllocator.RemoveByName(name); err != nil {
-				return "", fmt.Errorf("error removing dns entry %w", err)
-			}
-		}
+		n.dnsServer.Del(name)
 	}
 
 	ipaddr, err := n.ipAllocator.Allocate()
@@ -34,8 +28,8 @@ func (n *NetworkAllocator) GetIP(names ...string) (string, error) {
 		return "", fmt.Errorf("error allocating ip address: %w", err)
 	}
 
-	if err := n.dnsAllocator.Add(ipaddr, names, "name: "+strings.Join(names, ",")+" ip: "+ipaddr); err != nil {
-		return "", fmt.Errorf("error allocating name: %w", err)
+	for _, name := range names {
+		n.dnsServer.Add(ipaddr, name)
 	}
 
 	return ipaddr, nil
@@ -46,13 +40,9 @@ func (n *NetworkAllocator) ReleaseIP(ipAddress string) error {
 	defer n.Unlock()
 
 	slog.Debug("releasing ipAddress address", "ipAddress", ipAddress)
+	n.dnsServer.Del(ipAddress)
 
-	err := n.dnsAllocator.RemoveByComment("ip: "+ipAddress, "")
-	if err != nil {
-		return fmt.Errorf("error removing dns entry: %w", err)
-	}
-
-	err = n.ipAllocator.Release(ipAddress)
+	err := n.ipAllocator.Release(ipAddress)
 	if err != nil {
 		return fmt.Errorf("error releasing ipAddress address: %w", err)
 	}
@@ -61,17 +51,11 @@ func (n *NetworkAllocator) ReleaseIP(ipAddress string) error {
 }
 
 func (n *NetworkAllocator) CleanUp(exception string) error {
-	if err := n.dnsAllocator.CleanUp(exception); err != nil {
-		return fmt.Errorf("error cleanning up dns: %w", err)
-	}
+	n.dnsServer.Clear()
 
 	n.ipAllocator.CleanUp()
 
 	return nil
-}
-
-func (n *NetworkAllocator) DNSEntries() []dnsallocator.DNSEntry {
-	return n.dnsAllocator.Entries()
 }
 
 func New(iface string, cidr string) (*NetworkAllocator, error) {
@@ -82,12 +66,8 @@ func New(iface string, cidr string) (*NetworkAllocator, error) {
 	}
 
 	ret := &NetworkAllocator{
-		ipAllocator: myIpallocator, dnsAllocator: dnsallocator.New(),
-	}
-
-	err = ret.dnsAllocator.Load()
-	if err != nil {
-		return nil, fmt.Errorf("error loading dns entries: %w", err)
+		ipAllocator: myIpallocator,
+		dnsServer:   &dnsserver.Server{},
 	}
 
 	return ret, nil
