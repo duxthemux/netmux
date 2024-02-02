@@ -66,7 +66,7 @@ func run() error {
 		slog.Warn(fmt.Sprintf("error loading userconfig: %s", err.Error()))
 	}
 
-	networkAllocator, err := networkallocator.New(agentConfig.IFace, agentConfig.Network)
+	networkAllocator, err := networkallocator.New(ctx, agentConfig.IFace, agentConfig.Network)
 	if err != nil {
 		return fmt.Errorf("error creating network allocator: %w", err)
 	}
@@ -77,7 +77,7 @@ func run() error {
 
 	svc := daemon.New(agentConfig, networkAllocator, daemon.WithMetrics(metricsFactory))
 
-	address, err := networkAllocator.GetIP("nx")
+	address, err := networkAllocator.GetIP("nx.nx.local")
 	if err != nil {
 		return fmt.Errorf("failed to allocate address: %w", err)
 	}

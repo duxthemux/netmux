@@ -1,6 +1,7 @@
 package networkallocator
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -58,7 +59,7 @@ func (n *NetworkAllocator) CleanUp(exception string) error {
 	return nil
 }
 
-func New(iface string, cidr string) (*NetworkAllocator, error) {
+func New(ctx context.Context, iface string, cidr string) (*NetworkAllocator, error) {
 	slog.Debug("Creating NWAllocator", "iface", iface, "cidr", cidr)
 	myIpallocator, err := ipallocator.New(iface, cidr)
 	if err != nil {
@@ -69,6 +70,8 @@ func New(iface string, cidr string) (*NetworkAllocator, error) {
 		ipAllocator: myIpallocator,
 		dnsServer:   &dnsserver.Server{},
 	}
+
+	go ret.dnsServer.ListenAndServe(ctx)
 
 	return ret, nil
 }

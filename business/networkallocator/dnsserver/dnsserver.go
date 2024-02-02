@@ -53,10 +53,10 @@ type Server struct {
 func (s *Server) ListenAndServe(ctx context.Context) {
 	s.cache = cache.New(cache.NoExpiration, time.Hour*24)
 	// attach request handler func
-	dns.HandleFunc("service.", s.handleDnsRequest)
+	dns.HandleFunc(".", s.handleDnsRequest)
 
-	port := 5353
-	server := &dns.Server{Addr: ":" + strconv.Itoa(port), Net: "udp"}
+	port := 53
+	server := &dns.Server{Addr: "127.0.0.1:" + strconv.Itoa(port), Net: "udp"}
 	log.Printf("Starting at %d\n", port)
 
 	go func() {
@@ -71,11 +71,11 @@ func (s *Server) ListenAndServe(ctx context.Context) {
 }
 
 func (s *Server) Add(ip string, name string) {
-	s.cache.Set(name, ip, cache.NoExpiration)
+	s.cache.Set(name+".", ip, cache.NoExpiration)
 }
 
 func (s *Server) Del(name string) {
-	s.cache.Delete(name)
+	s.cache.Delete(name + ".")
 }
 
 func (s *Server) Clear() {
@@ -83,7 +83,7 @@ func (s *Server) Clear() {
 }
 
 func (s *Server) Find(name string) string {
-	ret, found := s.cache.Get(name)
+	ret, found := s.cache.Get(name + ".")
 	if !found {
 		return ""
 	}
